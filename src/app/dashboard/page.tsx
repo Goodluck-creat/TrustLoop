@@ -45,7 +45,9 @@ export default async function Dashboard() {
             + Create a task
           </Link>
         )}
-
+    <Link href={`/p/${user.id}`} className="block rounded-2xl border border-indigo-200 bg-white/70 px-6 py-3 text-center font-semibold text-indigo-700">
+  View my Trust Passport
+</Link>
         <h2 className="text-lg font-bold text-slate-800">{isOrg ? "Your tasks" : "Open funded tasks"}</h2>
         {tasks.length === 0 && (
           <p className="rounded-2xl border border-white/80 bg-white/70 p-6 text-slate-600">

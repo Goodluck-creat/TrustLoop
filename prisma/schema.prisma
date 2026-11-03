@@ -45,6 +45,8 @@ model User {
   submissions   Submission[]
   credentials   Credential[] @relation("Earned")
   issued        Credential[] @relation("Issued")
+  following     Follow[]     @relation("Follower")
+  followers     Follow[]     @relation("Following")
 }
 
 model Task {
@@ -111,4 +113,13 @@ model WebhookEvent {
   eventId     String   @id
   type        String
   processedAt DateTime @default(now())
+}
+model Follow {
+  followerId  String
+  followingId String
+  follower    User     @relation("Follower", fields: [followerId], references: [id])
+  following   User     @relation("Following", fields: [followingId], references: [id])
+  createdAt   DateTime @default(now())
+
+  @@id([followerId, followingId])
 }
