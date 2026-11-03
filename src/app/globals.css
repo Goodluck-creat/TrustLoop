@@ -24,3 +24,22 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+@keyframes drift {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(30px, -40px) scale(1.12); }
+}
+@keyframes floaty {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-14px); }
+}
+@keyframes rise {
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: none; }
+}
+.blob { position: absolute; border-radius: 9999px; filter: blur(70px); opacity: 0.55; animation: drift 14s ease-in-out infinite; }
+.float { animation: floaty 6s ease-in-out infinite; }
+.float-slow { animation: floaty 9s ease-in-out infinite; }
+.rise { animation: rise 0.8s ease-out both; }
+@media (prefers-reduced-motion: reduce) {
+  .blob, .float, .float-slow, .rise { animation: none; }
+}
