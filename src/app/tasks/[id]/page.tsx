@@ -3,6 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { getUserId } from "@/lib/session";
 import { acceptTask, submitWork, reviewTask } from "@/app/actions/work";
+import { startPayout } from "@/app/actions/payments";
 
 export const instant = false;
 
@@ -29,7 +30,7 @@ export default async function TaskPage({
     db.user.findUnique({ where: { id: userId } }),
     db.task.findUnique({
       where: { id },
-      include: { org: true, submissions: { orderBy: { createdAt: "desc" }, take: 1 } },
+      include: { org: true, credential: true, submissions: { orderBy: { createdAt: "desc" }, take: 1 } },
     }),
   ]);
   if (!user || !task) notFound();
@@ -98,9 +99,19 @@ export default async function TaskPage({
           </div>
         )}
 
-        {task.status === "APPROVED" && (
-          <p className="rounded-2xl bg-emerald-100 p-4 font-semibold text-emerald-900">Approved. Payout comes next.</p>
-        )}
+        {task.status === "APPROVED" && isOwner && (
+  <form action={startPayout.bind(null, task.id)}>
+    <button className={`${btn} w-full`}>Pay ₦{task.rewardNgn.toLocaleString("en-NG")} to the contributor</button>
+  </form>
+)}
+{task.status === "APPROVED" && !isOwner && (
+  <p className="rounded-2xl bg-emerald-100 p-4 font-semibold text-emerald-900">Approved. Waiting for payout.</p>
+)}
+{task.status === "PAID" && task.credential && (
+  <Link href={`/verify/${task.credential.id}`} className="block rounded-2xl bg-emerald-100 p-4 text-center font-semibold text-emerald-900 underline">
+    Paid. View the verified credential →
+  </Link>
+)}
       </div>
     </main>
   );
