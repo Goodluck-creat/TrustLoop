@@ -42,7 +42,7 @@ export default async function VerifyPage({ params }: { params: Promise<{ id: str
           </ul>
         </div>
 
-        <div className="space-y-2 rounded-3xl border border-white/80 bg-white/70 p-6 text-sm backdrop-blur">
+        <div className="space-y-2 rounded-3xl border border-white/80 bg-white/70 p-6 text-sm text-slate-800 backdrop-blur">
           <p><b>Approved by issuer:</b> Yes</p>
           <p>
             <b>Payment:</b> {simulated ? "Confirmed in the sandbox (simulated, not real money)" : "Confirmed"}
