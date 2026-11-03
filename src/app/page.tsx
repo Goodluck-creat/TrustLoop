@@ -1,98 +1,96 @@
+import Link from "next/link";
+import PassportScene from "@/components/PassportScene";
+import { getUserId } from "@/lib/session";
+
 const steps = [
-  { n: "1", t: "Fund", d: "An organization posts a task and funds the reward.", c: "bg-violet-100" },
-  { n: "2", t: "Deliver", d: "A contributor submits their finished work.", c: "bg-sky-100" },
-  { n: "3", t: "Get paid", d: "Approval triggers payment through Roqqu.", c: "bg-emerald-100" },
-  { n: "4", t: "Prove it", d: "A verifiable credential is issued instantly.", c: "bg-pink-100" },
+  { n: "1", t: "Fund", d: "A hirer posts a task and funds the reward.", c: "from-violet-400 to-indigo-500" },
+  { n: "2", t: "Deliver", d: "A freelancer submits their finished work.", c: "from-sky-400 to-cyan-500" },
+  { n: "3", t: "Get paid", d: "Approval triggers the payout.", c: "from-emerald-400 to-teal-500" },
+  { n: "4", t: "Prove it", d: "A verifiable credential joins their Trust Passport.", c: "from-pink-400 to-fuchsia-500" },
 ];
 
-const qr = Array.from({ length: 49 }, (_, i) => (i * 13) % 5 < 2);
+export default async function Home() {
+  const signedIn = Boolean(await getUserId());
 
-export default function Home() {
   return (
-    <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-violet-50 via-pink-50 to-sky-50 text-slate-800">
-      {/* soft animated background */}
-      <div className="blob -left-24 top-0 h-80 w-80 bg-violet-300" />
-      <div className="blob right-0 top-40 h-96 w-96 bg-pink-200 [animation-delay:-5s]" />
-      <div className="blob bottom-0 left-1/3 h-80 w-80 bg-sky-200 [animation-delay:-9s]" />
+    <div className="relative min-h-screen overflow-hidden bg-[#0B0B2B] text-white">
+      <div className="tl-aurora -left-32 top-0 h-96 w-96 bg-violet-600" />
+      <div className="tl-aurora right-[-6rem] top-1/3 h-[28rem] w-[28rem] bg-fuchsia-500 [animation-delay:-6s]" />
+      <div className="tl-aurora bottom-0 left-1/4 h-96 w-96 bg-cyan-500 [animation-delay:-11s]" />
 
-      <header className="relative mx-auto flex max-w-6xl items-center justify-between px-6 py-6">
-        <span className="text-xl font-bold tracking-tight text-indigo-700">TrustLoop</span>
-        <a href="#how" className="rounded-full bg-white/70 px-4 py-2 text-sm font-semibold text-indigo-700 shadow-sm backdrop-blur">
-          How it works
-        </a>
+      <header className="relative mx-auto flex max-w-6xl items-center justify-between px-6 py-5">
+        <span className="text-xl font-extrabold tracking-tight">Trust<span className="text-pink-300">Loop</span></span>
+        <nav className="hidden gap-8 text-sm font-semibold text-slate-300 md:flex">
+          <a href="#how" className="hover:text-white">How it works</a>
+          <a href="#who" className="hover:text-white">For hirers & freelancers</a>
+        </nav>
+        <div className="flex items-center gap-2">
+          {signedIn ? (
+            <Link href="/dashboard" className="rounded-full bg-white px-5 py-2 text-sm font-bold text-indigo-900">Dashboard</Link>
+          ) : (
+            <>
+              <Link href="/login" className="rounded-full border border-white/25 px-4 py-2 text-sm font-semibold text-white hover:bg-white/10">Log in</Link>
+              <Link href="/signup" className="rounded-full bg-gradient-to-r from-violet-600 to-pink-600 px-4 py-2 text-sm font-bold text-white shadow-lg shadow-violet-900/40">Sign up</Link>
+            </>
+          )}
+        </div>
       </header>
 
-      <main className="relative mx-auto grid max-w-6xl items-center gap-12 px-6 pb-20 pt-10 md:grid-cols-2 md:pt-20">
-        <div className="rise">
-          <p className="inline-block rounded-full bg-white/70 px-4 py-1 text-sm font-semibold text-indigo-700 shadow-sm backdrop-blur">
-            Built on Roqqu
+      <main className="relative mx-auto grid max-w-6xl items-center gap-10 px-6 pb-16 pt-6 lg:grid-cols-2 lg:pt-14">
+        <div>
+          <p className="inline-block rounded-full border border-white/15 bg-white/10 px-4 py-1 text-sm font-semibold text-cyan-200 backdrop-blur">
+            Built for the Anambra Web3 Hackathon
           </p>
-          <h1 className="mt-5 text-4xl font-extrabold leading-tight sm:text-5xl lg:text-6xl">
+          <h1 className="mt-5 text-4xl font-extrabold leading-[1.1] sm:text-5xl lg:text-6xl">
             Get paid for work.{" "}
-            <span className="bg-gradient-to-r from-indigo-600 to-pink-500 bg-clip-text text-transparent">
-              Prove it forever.
-            </span>
+            <span className="bg-gradient-to-r from-cyan-300 via-violet-300 to-pink-300 bg-clip-text text-transparent">Prove it forever.</span>
           </h1>
-          <p className="mt-6 max-w-lg text-lg text-slate-600">
-            Communities fund tasks. You deliver. Every approved task becomes a
-            credential anyone can verify.
+          <p className="mt-6 max-w-lg text-lg text-slate-300">
+            Communities fund tasks. Freelancers deliver. Every approved task becomes a credential anyone can verify.
           </p>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-            <a href="#how" className="rounded-2xl bg-indigo-600 px-7 py-3.5 text-center font-semibold text-white shadow-lg shadow-indigo-200 transition hover:-translate-y-0.5 hover:bg-indigo-700">
-              Get started
-            </a>
-            <a href="#" className="rounded-2xl bg-white/80 px-7 py-3.5 text-center font-semibold text-indigo-700 shadow-sm backdrop-blur transition hover:-translate-y-0.5">
-              Verify a credential
-            </a>
+            <Link href={signedIn ? "/dashboard" : "/signup"} className="rounded-2xl bg-gradient-to-r from-violet-600 to-pink-600 px-7 py-3.5 text-center font-bold text-white shadow-xl shadow-violet-900/50 transition hover:-translate-y-0.5">
+              {signedIn ? "Open dashboard" : "Get started free"}
+            </Link>
+            {!signedIn && (
+              <Link href="/login" className="rounded-2xl border border-white/25 bg-white/5 px-7 py-3.5 text-center font-semibold text-white backdrop-blur transition hover:-translate-y-0.5 hover:bg-white/10">
+                Log in
+              </Link>
+            )}
           </div>
         </div>
-
-        {/* floating credential card */}
-        <div className="relative mx-auto h-[420px] w-full max-w-sm">
-          <div className="float absolute left-4 top-6 w-72 rotate-[-4deg] rounded-3xl border border-white/80 bg-white/70 p-6 shadow-xl shadow-indigo-100 backdrop-blur-xl">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-slate-500">CREDENTIAL</span>
-              <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-800">Verified</span>
-            </div>
-            <h3 className="mt-3 text-2xl font-bold">Logo design</h3>
-            <p className="text-sm text-slate-500">Approved by Anambra Techies</p>
-            <div className="mt-4 flex items-center gap-4">
-              <div className="grid grid-cols-7 gap-[3px]">
-                {qr.map((on, i) => (
-                  <span key={i} className={`h-3 w-3 rounded-[3px] ${on ? "bg-indigo-700" : "bg-indigo-100"}`} />
-                ))}
-              </div>
-              <div className="space-y-2 text-xs">
-                <p className="rounded-full bg-emerald-100 px-3 py-1 font-semibold text-emerald-800">Paid</p>
-                <p className="rounded-full bg-indigo-100 px-3 py-1 font-semibold text-indigo-800">On-chain</p>
-              </div>
-            </div>
-          </div>
-          <div className="float-slow absolute right-0 top-0 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-amber-200 to-amber-400 text-3xl font-bold text-amber-900 shadow-lg">
-            ₦
-          </div>
-          <div className="float-slow absolute bottom-6 right-4 rounded-2xl bg-white/80 px-4 py-3 text-sm font-semibold shadow-lg backdrop-blur [animation-delay:-3s]">
-            ✓ Payment confirmed
-          </div>
-          <div className="float absolute bottom-0 left-0 h-14 w-14 rounded-2xl bg-gradient-to-br from-pink-300 to-violet-400 opacity-80 [animation-delay:-2s]" />
-        </div>
+        <PassportScene />
       </main>
 
-      <section id="how" className="relative mx-auto max-w-6xl px-6 pb-24">
+      <section id="how" className="relative mx-auto max-w-6xl px-6 pb-20">
         <h2 className="text-center text-3xl font-bold">How it works</h2>
         <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {steps.map((s) => (
-            <div key={s.n} className="rounded-3xl border border-white/80 bg-white/60 p-6 shadow-sm backdrop-blur transition hover:-translate-y-1 hover:shadow-lg">
-              <span className={`flex h-11 w-11 items-center justify-center rounded-2xl text-lg font-bold text-indigo-800 ${s.c}`}>{s.n}</span>
+            <div key={s.n} className="rounded-3xl border border-white/10 bg-white/5 p-6 backdrop-blur transition hover:-translate-y-1 hover:bg-white/10">
+              <span className={`flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br text-lg font-bold text-white ${s.c}`}>{s.n}</span>
               <h3 className="mt-4 text-xl font-bold">{s.t}</h3>
-              <p className="mt-2 text-slate-600">{s.d}</p>
+              <p className="mt-2 text-slate-300">{s.d}</p>
             </div>
           ))}
         </div>
       </section>
 
-      <footer className="relative pb-10 text-center text-sm text-slate-500">
-        TrustLoop · Payments powered by Roqqu
+      <section id="who" className="relative mx-auto grid max-w-6xl gap-5 px-6 pb-20 md:grid-cols-2">
+        {[
+          { t: "For hirers", c: "from-indigo-500/30", l: ["Post a task and fund it in minutes", "Review work with an AI checklist", "Pay only for approved work", "Build a record of who you have worked with"] },
+          { t: "For freelancers", c: "from-pink-500/30", l: ["Find paid tasks that match your skills", "Know the reward is funded before you start", "Get paid to your wallet on approval", "Own a Trust Passport anyone can verify"] },
+        ].map((b) => (
+          <div key={b.t} className={`rounded-3xl border border-white/10 bg-gradient-to-br ${b.c} to-white/5 p-8 backdrop-blur`}>
+            <h3 className="text-2xl font-bold">{b.t}</h3>
+            <ul className="mt-4 space-y-3 text-slate-200">
+              {b.l.map((x) => (<li key={x} className="flex gap-3"><span className="text-emerald-300">✓</span>{x}</li>))}
+            </ul>
+          </div>
+        ))}
+      </section>
+
+      <footer className="relative border-t border-white/10 px-6 py-8 text-center text-sm text-slate-400">
+        TrustLoop is a hackathon project built on the Roqqu API. Contact: [your email here]
       </footer>
     </div>
   );
