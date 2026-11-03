@@ -49,6 +49,9 @@ model User {
   followers     Follow[]       @relation("Following")
   notifications Notification[]
   withdrawals   Withdrawal[]
+  avatarAt      DateTime?
+  coverAt       DateTime?
+  images        UserImage[]
 }
 
 model Task {
@@ -155,4 +158,13 @@ model Withdrawal {
   createdAt DateTime @default(now())
 
   @@index([userId])
+}
+model UserImage {
+  userId    String
+  kind      String
+  data      Bytes
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@id([userId, kind])
 }

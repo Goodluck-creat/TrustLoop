@@ -5,6 +5,7 @@ import Shell from "@/components/Shell";
 import Avatar from "@/components/Avatar";
 import { db } from "@/lib/db";
 import { getUserId } from "@/lib/session";
+import { avatarSrc } from "@/lib/images";
 import { acceptTask, submitWork, approveTask, requestChanges } from "@/app/actions/work";
 import { STATUS, pill, card, input } from "@/lib/ui";
 
@@ -55,7 +56,7 @@ export default async function TaskPage({
         <div className="space-y-5">
           <div className={`${card} p-6`}>
             <div className="flex items-start gap-4">
-              <Avatar name={task.org.name} className="h-14 w-14 text-lg" />
+              <Avatar name={task.org.name} src={avatarSrc(task.org)} className="h-14 w-14 text-lg" />
               <div className="min-w-0 flex-1">
                 <p className="text-sm text-slate-300">
                   <Link href={`/p/${task.org.id}`} className="font-semibold text-violet-200 hover:underline">{task.org.name}</Link>

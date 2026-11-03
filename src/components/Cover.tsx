@@ -5,7 +5,19 @@ const covers = [
   "from-emerald-400 via-cyan-500 to-indigo-600",
 ];
 
-export default function Cover({ seed, className = "h-28 sm:h-40" }: { seed: string; className?: string }) {
+export default function Cover({
+  seed,
+  src,
+  className = "h-28 sm:h-40",
+}: { seed: string; src?: string | null; className?: string }) {
+  if (src) {
+    return (
+      <div className={`relative overflow-hidden bg-slate-800 ${className}`}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={src} alt="" className="absolute inset-0 h-full w-full object-cover" />
+      </div>
+    );
+  }
   const i = [...seed].reduce((a, c) => a + c.charCodeAt(0), 0) % covers.length;
   return (
     <div aria-hidden className={`relative overflow-hidden bg-gradient-to-br ${covers[i]} ${className}`}>

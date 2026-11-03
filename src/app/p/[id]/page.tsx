@@ -1,11 +1,12 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { BadgeCheck, UserPlus, ArrowUpRight } from "lucide-react";
+import { BadgeCheck, UserPlus, ArrowUpRight, Pencil } from "lucide-react";
 import Shell from "@/components/Shell";
 import Avatar from "@/components/Avatar";
 import Cover from "@/components/Cover";
 import { db } from "@/lib/db";
 import { getUserId } from "@/lib/session";
+import { avatarSrc, coverSrc } from "@/lib/images";
 import { toggleFollow } from "@/app/actions/social";
 import { card, pill } from "@/lib/ui";
 
@@ -43,10 +44,15 @@ export default async function PassportPage({ params }: { params: Promise<{ id: s
   return (
     <Shell>
       <div className={`${card} overflow-hidden`}>
-        <Cover seed={person.name} className="h-36 sm:h-52" />
+        <Cover seed={person.name} src={coverSrc(person)} className="h-36 sm:h-52" />
         <div className="px-5 pb-6 sm:px-8">
           <div className="-mt-12 flex flex-wrap items-end justify-between gap-4">
-            <Avatar name={person.name} className="h-24 w-24 text-3xl ring-4 ring-[#0B0B2B]" />
+            <Avatar name={person.name} src={avatarSrc(person)} className="h-24 w-24 text-3xl ring-4 ring-[#0B0B2B]" />
+            {isSelf && (
+              <Link href="/settings/profile" className="flex items-center gap-2 rounded-full border border-white/25 px-5 py-2.5 text-sm font-semibold hover:bg-white/10">
+                <Pencil className="h-4 w-4" aria-hidden /> Edit profile
+              </Link>
+            )}
             {!isSelf &&
               (viewerId ? (
                 <form action={toggleFollow.bind(null, id)}>

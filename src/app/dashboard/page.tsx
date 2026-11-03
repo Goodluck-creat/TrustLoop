@@ -9,6 +9,7 @@ import WithdrawForm from "@/components/WithdrawForm";
 import { db } from "@/lib/db";
 import { getUserId } from "@/lib/session";
 import { getBalance } from "@/lib/money";
+import { avatarSrc, coverSrc } from "@/lib/images";
 import { startFunding } from "@/app/actions/payments";
 import { STATUS, pill, card } from "@/lib/ui";
 
@@ -21,7 +22,7 @@ function TaskCard({ t, isOrg }: { t: TaskWithOrg; isOrg: boolean }) {
   return (
     <article className={`${card} p-5 transition hover:-translate-y-0.5 hover:bg-white/10`}>
       <div className="flex items-start gap-3">
-        <Avatar name={t.org.name} />
+        <Avatar name={t.org.name} src={avatarSrc(t.org)} />
         <div className="min-w-0 flex-1">
           <p className="truncate text-sm text-slate-300">{t.org.name}</p>
           <Link href={`/tasks/${t.id}`} className="block text-lg font-bold text-white hover:text-violet-200">{t.title}</Link>
@@ -73,9 +74,9 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
       <div className="grid gap-6 lg:grid-cols-[260px_minmax(0,1fr)_280px]">
         <aside className="space-y-4">
           <div className={`${card} overflow-hidden`}>
-            <Cover seed={user.name} className="h-24" />
+            <Cover seed={user.name} src={coverSrc(user)} className="h-24" />
             <div className="-mt-8 px-5 pb-5">
-              <Avatar name={user.name} className="h-16 w-16 text-xl ring-4 ring-[#0B0B2B]" />
+              <Avatar name={user.name} src={avatarSrc(user)} className="h-16 w-16 text-xl ring-4 ring-[#0B0B2B]" />
               <p className="mt-3 text-lg font-bold">{user.name}</p>
               <p className="text-sm text-slate-300">{isOrg ? "Hirer / organization" : "Freelancer / contributor"}</p>
               <div className="mt-4 grid grid-cols-2 gap-2 text-center">
@@ -84,6 +85,9 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
               </div>
               <Link href={`/p/${user.id}`} className="mt-4 flex items-center justify-center gap-2 rounded-xl border border-white/20 px-4 py-2 text-sm font-semibold hover:bg-white/10">
                 <BadgeCheck className="h-4 w-4" aria-hidden /> View Trust Passport
+              </Link>
+              <Link href="/settings/profile" className="mt-2 flex items-center justify-center rounded-xl px-4 py-2 text-sm font-semibold text-slate-300 hover:bg-white/10">
+                Edit profile pictures
               </Link>
             </div>
           </div>
