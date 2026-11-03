@@ -44,7 +44,7 @@ export default async function VerifyPage({ params }: { params: Promise<{ id: str
           <h2 className="text-xl font-bold">{p.title}</h2>
           <p>Completed by <Link href={`/p/${p.contributor.id}`} className="font-bold text-indigo-700 underline">{p.contributor.name}</Link></p>
           <p>Approved and paid by <Link href={`/p/${p.issuer.id}`} className="font-bold text-indigo-700 underline">{p.issuer.name}</Link></p>
-          <p>Reward: <b>₦{p.rewardNgn.toLocaleString("en-NG")}</b></p>
+          
           <p className="text-sm text-slate-500">Issued {new Date(p.issuedAt).toLocaleDateString("en-NG")}</p>
           <ul className="list-disc space-y-1 pl-5">
             {p.criteria.map((c) => (<li key={c}>{c}</li>))}
@@ -59,7 +59,7 @@ export default async function VerifyPage({ params }: { params: Promise<{ id: str
 
         <div className="space-y-2 rounded-3xl border border-white/80 bg-white/70 p-6 text-sm backdrop-blur">
           <p><b>Approved by issuer:</b> Yes</p>
-          <p><b>Payment:</b> {simulated ? "Confirmed in the sandbox (simulated, not real money)" : "Confirmed"}</p>
+          <p><b>Payment:</b> {p.txHash && !simulated ? "Confirmed on-chain" : "Released to the contributor (sandbox, not real money)"}</p>
           <p><b>Signature:</b> {signatureValid ? "Valid (Ed25519)" : "Invalid"}</p>
           <p><b>Record unchanged:</b> {unchanged ? "Yes" : "No"}</p>
           <p><b>On-chain anchor:</b> {cred.anchorTx ?? "Not anchored yet (planned: Base)"}</p>

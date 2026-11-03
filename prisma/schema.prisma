@@ -33,38 +33,40 @@ enum PaymentStatus {
 }
 
 model User {
-  id            String       @id @default(cuid())
-  email         String       @unique
+  id            String         @id @default(cuid())
+  email         String         @unique
   passwordHash  String
   name          String
   role          Role
   payoutAddress String?
-  createdAt     DateTime     @default(now())
-  tasksPosted   Task[]       @relation("PostedBy")
-  tasksTaken    Task[]       @relation("TakenBy")
+  createdAt     DateTime       @default(now())
+  tasksPosted   Task[]         @relation("PostedBy")
+  tasksTaken    Task[]         @relation("TakenBy")
   submissions   Submission[]
-  credentials   Credential[] @relation("Earned")
-  issued        Credential[] @relation("Issued")
-  following     Follow[]     @relation("Follower")
-  followers     Follow[]     @relation("Following")
+  credentials   Credential[]   @relation("Earned")
+  issued        Credential[]   @relation("Issued")
+  following     Follow[]       @relation("Follower")
+  followers     Follow[]       @relation("Following")
+  notifications Notification[]
+  withdrawals   Withdrawal[]
 }
 
 model Task {
-  id           String       @id @default(cuid())
-  title        String
-  description  String
-  criteria     String[]
-  rewardNgn    Int
-  deadline     DateTime
-  status       TaskStatus   @default(AWAITING_FUNDING)
-  org          User         @relation("PostedBy", fields: [orgId], references: [id])
-  orgId        String
-  contributor  User?        @relation("TakenBy", fields: [contributorId], references: [id])
+  id            String       @id @default(cuid())
+  title         String
+  description   String
+  criteria      String[]
+  rewardNgn     Int
+  deadline      DateTime
+  status        TaskStatus   @default(AWAITING_FUNDING)
+  org           User         @relation("PostedBy", fields: [orgId], references: [id])
+  orgId         String
+  contributor   User?        @relation("TakenBy", fields: [contributorId], references: [id])
   contributorId String?
-  createdAt    DateTime     @default(now())
-  submissions  Submission[]
-  payments     Payment[]
-  credential   Credential?
+  createdAt     DateTime     @default(now())
+  submissions   Submission[]
+  payments      Payment[]
+  credential    Credential?
 }
 
 model Submission {
@@ -76,22 +78,23 @@ model Submission {
   evidenceUrl   String
   notes         String?
   aiReport      Json?
+  reviewNote    String?
   createdAt     DateTime @default(now())
 }
 
 model Payment {
-  id          String        @id @default(cuid())
-  task        Task          @relation(fields: [taskId], references: [id])
-  taskId      String
-  type        PaymentType
-  status      PaymentStatus @default(PENDING)
-  reference   String        @unique
-  asset       String?
-  network     String?
-  amount      String?
-  txHash      String?
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  id        String        @id @default(cuid())
+  task      Task          @relation(fields: [taskId], references: [id])
+  taskId    String
+  type      PaymentType
+  status    PaymentStatus @default(PENDING)
+  reference String        @unique
+  asset     String?
+  network   String?
+  amount    String?
+  txHash    String?
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
 }
 
 model Credential {
@@ -114,6 +117,7 @@ model WebhookEvent {
   type        String
   processedAt DateTime @default(now())
 }
+
 model Follow {
   followerId  String
   followingId String
@@ -122,4 +126,33 @@ model Follow {
   createdAt   DateTime @default(now())
 
   @@id([followerId, followingId])
+}
+
+model Notification {
+  id        String    @id @default(cuid())
+  user      User      @relation(fields: [userId], references: [id])
+  userId    String
+  title     String
+  body      String
+  href      String
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId, readAt])
+}
+
+model Withdrawal {
+  id        String   @id @default(cuid())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  amountNgn Int
+  asset     String
+  network   String
+  address   String
+  status    String   @default("PENDING")
+  reference String   @unique
+  txHash    String?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
 }

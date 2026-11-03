@@ -1,10 +1,17 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { BadgeCheck, UserPlus, ArrowUpRight } from "lucide-react";
+import Shell from "@/components/Shell";
+import Avatar from "@/components/Avatar";
+import Cover from "@/components/Cover";
 import { db } from "@/lib/db";
 import { getUserId } from "@/lib/session";
 import { toggleFollow } from "@/app/actions/social";
+import { card, pill } from "@/lib/ui";
 
 export const instant = false;
+
+const tiles = ["from-violet-500 to-fuchsia-500", "from-cyan-400 to-indigo-500", "from-amber-400 to-pink-500", "from-emerald-400 to-cyan-500"];
 
 export default async function PassportPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -15,87 +22,80 @@ export default async function PassportPage({ params }: { params: Promise<{ id: s
   const isOrg = person.role === "ORG";
   const isSelf = viewerId === id;
 
-  const [followers, following, creds] = await Promise.all([
-    db.follow.count({ where: { followingId: id } }),
-    db.follow.count({ where: { followerId: id } }),
-    db.credential.findMany({
-      where: isOrg ? { issuerId: id } : { contributorId: id },
-      include: { task: true, issuer: true, contributor: true },
-      orderBy: { createdAt: "desc" },
-      take: 20,
-    }),
-  ]);
+  const followers = await db.follow.count({ where: { followingId: id } });
+  const following = await db.follow.count({ where: { followerId: id } });
+  const creds = await db.credential.findMany({
+    where: isOrg ? { issuerId: id } : { contributorId: id },
+    include: { task: true, issuer: true, contributor: true },
+    orderBy: { createdAt: "desc" },
+    take: 30,
+  });
   const isFollowing = viewerId
     ? Boolean(await db.follow.findUnique({ where: { followerId_followingId: { followerId: viewerId, followingId: id } } }))
     : false;
 
-  const approved = isOrg ? await db.task.count({ where: { orgId: id, status: { in: ["APPROVED", "PAID"] } } }) : 0;
-  const paid = isOrg ? await db.task.count({ where: { orgId: id, status: "PAID" } }) : 0;
-  const earned = isOrg ? null : await db.task.aggregate({ where: { contributorId: id, status: "PAID" }, _sum: { rewardNgn: true } });
-
-  const stats: [string, string][] = isOrg
-    ? [["Tasks paid", String(paid)], ["Payment reliability", approved ? `${paid} of ${approved}` : "No data yet"], ["Followers", String(followers)]]
-    : [["Verified work", String(creds.length)], ["Total earned", `₦${(earned?._sum.rewardNgn ?? 0).toLocaleString("en-NG")}`], ["Followers", String(followers)]];
+  const stats: [string, number][] = [
+    [isOrg ? "Tasks paid" : "Verified work", creds.length],
+    ["Followers", followers],
+    ["Following", following],
+  ];
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-violet-50 via-pink-50 to-sky-50 px-6 py-10 text-slate-800">
-      <div className="mx-auto max-w-2xl space-y-5">
-        <Link href="/" className="text-sm font-semibold text-indigo-700">← TrustLoop</Link>
-
-        <div className="rounded-3xl bg-gradient-to-br from-indigo-600 via-violet-600 to-fuchsia-600 p-6 text-white shadow-xl">
-          <p className="text-xs font-bold tracking-widest opacity-80">TRUST PASSPORT</p>
-          <div className="mt-3 flex items-center gap-4">
-            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white/20 text-2xl font-bold">
-              {person.name.slice(0, 2).toUpperCase()}
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold">{person.name}</h1>
-              <p className="text-sm opacity-90">{isOrg ? "Hirer / organization" : "Freelancer / contributor"}</p>
-              <p className="text-xs opacity-80">{following} following</p>
-            </div>
+    <Shell>
+      <div className={`${card} overflow-hidden`}>
+        <Cover seed={person.name} className="h-36 sm:h-52" />
+        <div className="px-5 pb-6 sm:px-8">
+          <div className="-mt-12 flex flex-wrap items-end justify-between gap-4">
+            <Avatar name={person.name} className="h-24 w-24 text-3xl ring-4 ring-[#0B0B2B]" />
+            {!isSelf &&
+              (viewerId ? (
+                <form action={toggleFollow.bind(null, id)}>
+                  <button className="flex items-center gap-2 rounded-full bg-white px-6 py-2.5 text-sm font-bold text-indigo-900">
+                    {isFollowing ? "Following" : <><UserPlus className="h-4 w-4" aria-hidden /> Follow</>}
+                  </button>
+                </form>
+              ) : (
+                <Link href="/login" className="rounded-full bg-white px-6 py-2.5 text-sm font-bold text-indigo-900">Log in to follow</Link>
+              ))}
           </div>
-          {!isSelf && (
-            viewerId ? (
-              <form action={toggleFollow.bind(null, id)} className="mt-4">
-                <button className="rounded-xl bg-white px-5 py-2 text-sm font-bold text-indigo-700">
-                  {isFollowing ? "Following ✓" : "Follow"}
-                </button>
-              </form>
-            ) : (
-              <Link href="/login" className="mt-4 inline-block rounded-xl bg-white px-5 py-2 text-sm font-bold text-indigo-700">Log in to follow</Link>
-            )
-          )}
+          <div className="mt-4 flex flex-wrap items-center gap-3">
+            <h1 className="text-3xl font-extrabold">{person.name}</h1>
+            <span className={`${pill} bg-cyan-400/15 text-cyan-200 ring-cyan-300/30`}>{isOrg ? "Hirer" : "Freelancer"}</span>
+          </div>
+          <p className="mt-1 flex items-center gap-2 text-sm text-slate-300">
+            <BadgeCheck className="h-4 w-4 text-emerald-300" aria-hidden /> Trust Passport · built from approved, signed work
+          </p>
+          <div className="mt-6 grid grid-cols-3 gap-3 text-center">
+            {stats.map(([label, n]) => (
+              <div key={label} className="rounded-2xl bg-white/5 py-4">
+                <p className="text-2xl font-extrabold">{n}</p>
+                <p className="text-xs text-slate-300">{label}</p>
+              </div>
+            ))}
+          </div>
         </div>
+      </div>
 
-        <div className="grid grid-cols-3 gap-3">
-          {stats.map(([label, value]) => (
-            <div key={label} className="rounded-2xl border border-white/80 bg-white/70 p-4 text-center backdrop-blur">
-              <p className="text-xl font-extrabold text-indigo-700">{value}</p>
-              <p className="text-xs text-slate-600">{label}</p>
+      <h2 className="mb-3 mt-8 text-xl font-bold">{isOrg ? "Work they approved and paid for" : "Verified work"}</h2>
+      {creds.length === 0 && <p className={`${card} p-6 text-slate-300`}>No verified work yet.</p>}
+      <div className="grid gap-4 sm:grid-cols-2">
+        {creds.map((c, i) => (
+          <Link key={c.id} href={`/verify/${c.id}`} className={`${card} group flex items-center gap-4 p-5 transition hover:-translate-y-1 hover:bg-white/10`}>
+            <div className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br ${tiles[i % tiles.length]}`}>
+              <BadgeCheck className="h-7 w-7" aria-hidden />
             </div>
-          ))}
-        </div>
-
-        <h2 className="text-lg font-bold">{isOrg ? "Work they approved and paid for" : "Verified work"}</h2>
-        {creds.length === 0 && (
-          <p className="rounded-2xl border border-white/80 bg-white/70 p-5 text-slate-600">No verified work yet.</p>
-        )}
-        {creds.map((c) => (
-          <Link key={c.id} href={`/verify/${c.id}`} className="block rounded-2xl border border-white/80 bg-white/70 p-5 backdrop-blur transition hover:-translate-y-0.5">
-            <div className="flex items-center justify-between gap-3">
-              <p className="font-bold">{c.task.title}</p>
-              <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-800">Verified</span>
+            <div className="min-w-0 flex-1">
+              <p className="truncate font-bold">{c.task.title}</p>
+              <p className="truncate text-sm text-slate-300">
+                {isOrg ? `Completed by ${c.contributor.name}` : `Issued by ${c.issuer.name}`} · {c.createdAt.toLocaleDateString("en-NG")}
+              </p>
+              <span className={`${pill} mt-2 bg-emerald-400/15 text-emerald-200 ring-emerald-300/30`}>Verified</span>
             </div>
-            <p className="text-sm text-slate-600">
-              {isOrg ? `Completed by ${c.contributor.name}` : `Issued by ${c.issuer.name}`} · {c.createdAt.toLocaleDateString("en-NG")}
-            </p>
+            <ArrowUpRight className="h-5 w-5 shrink-0 text-slate-400 transition group-hover:text-white" aria-hidden />
           </Link>
         ))}
-
-        <p className="text-xs text-slate-500">
-          This record comes from approved work with signed credentials. It is evidence of specific projects, not a score.
-        </p>
       </div>
-    </main>
+      <p className="mt-6 text-xs text-slate-400">This record is evidence of specific, signed projects. It is not a score.</p>
+    </Shell>
   );
 }
