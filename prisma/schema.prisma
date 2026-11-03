@@ -1,0 +1,114 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ORG
+  CONTRIBUTOR
+}
+
+enum TaskStatus {
+  AWAITING_FUNDING
+  FUNDED
+  ASSIGNED
+  SUBMITTED
+  APPROVED
+  PAID
+}
+
+enum PaymentType {
+  FUND
+  PAYOUT
+}
+
+enum PaymentStatus {
+  PENDING
+  CONFIRMED
+  FAILED
+}
+
+model User {
+  id            String       @id @default(cuid())
+  email         String       @unique
+  passwordHash  String
+  name          String
+  role          Role
+  payoutAddress String?
+  createdAt     DateTime     @default(now())
+  tasksPosted   Task[]       @relation("PostedBy")
+  tasksTaken    Task[]       @relation("TakenBy")
+  submissions   Submission[]
+  credentials   Credential[] @relation("Earned")
+  issued        Credential[] @relation("Issued")
+}
+
+model Task {
+  id           String       @id @default(cuid())
+  title        String
+  description  String
+  criteria     String[]
+  rewardNgn    Int
+  deadline     DateTime
+  status       TaskStatus   @default(AWAITING_FUNDING)
+  org          User         @relation("PostedBy", fields: [orgId], references: [id])
+  orgId        String
+  contributor  User?        @relation("TakenBy", fields: [contributorId], references: [id])
+  contributorId String?
+  createdAt    DateTime     @default(now())
+  submissions  Submission[]
+  payments     Payment[]
+  credential   Credential?
+}
+
+model Submission {
+  id            String   @id @default(cuid())
+  task          Task     @relation(fields: [taskId], references: [id])
+  taskId        String
+  contributor   User     @relation(fields: [contributorId], references: [id])
+  contributorId String
+  evidenceUrl   String
+  notes         String?
+  aiReport      Json?
+  createdAt     DateTime @default(now())
+}
+
+model Payment {
+  id          String        @id @default(cuid())
+  task        Task          @relation(fields: [taskId], references: [id])
+  taskId      String
+  type        PaymentType
+  status      PaymentStatus @default(PENDING)
+  reference   String        @unique
+  asset       String?
+  network     String?
+  amount      String?
+  txHash      String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+}
+
+model Credential {
+  id            String   @id @default(cuid())
+  task          Task     @relation(fields: [taskId], references: [id])
+  taskId        String   @unique
+  contributor   User     @relation("Earned", fields: [contributorId], references: [id])
+  contributorId String
+  issuer        User     @relation("Issued", fields: [issuerId], references: [id])
+  issuerId      String
+  payload       Json
+  hash          String
+  signature     String
+  anchorTx      String?
+  createdAt     DateTime @default(now())
+}
+
+model WebhookEvent {
+  eventId     String   @id
+  type        String
+  processedAt DateTime @default(now())
+}
