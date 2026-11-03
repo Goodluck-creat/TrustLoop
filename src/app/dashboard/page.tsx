@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { getUserId } from "@/lib/session";
 import { logout } from "@/app/actions/auth";
+export const instant = false;
 
 export default async function Dashboard() {
   const userId = await getUserId();

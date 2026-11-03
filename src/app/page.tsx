@@ -1,6 +1,7 @@
 import Link from "next/link";
 import PassportScene from "@/components/PassportScene";
-import { getUserId } from "@/lib/session";
+import { Suspense } from "react";
+import { HeaderAuth, HeroAuth } from "@/components/AuthButtons";
 
 const steps = [
   { n: "1", t: "Fund", d: "A hirer posts a task and funds the reward.", c: "from-violet-400 to-indigo-500" },
@@ -9,9 +10,7 @@ const steps = [
   { n: "4", t: "Prove it", d: "A verifiable credential joins their Trust Passport.", c: "from-pink-400 to-fuchsia-500" },
 ];
 
-export default async function Home() {
-  const signedIn = Boolean(await getUserId());
-
+export default function Home() {
   return (
     <div className="relative min-h-screen overflow-hidden bg-[#0B0B2B] text-white">
       <div className="tl-aurora -left-32 top-0 h-96 w-96 bg-violet-600" />
@@ -24,16 +23,9 @@ export default async function Home() {
           <a href="#how" className="hover:text-white">How it works</a>
           <a href="#who" className="hover:text-white">For hirers & freelancers</a>
         </nav>
-        <div className="flex items-center gap-2">
-          {signedIn ? (
-            <Link href="/dashboard" className="rounded-full bg-white px-5 py-2 text-sm font-bold text-indigo-900">Dashboard</Link>
-          ) : (
-            <>
-              <Link href="/login" className="rounded-full border border-white/25 px-4 py-2 text-sm font-semibold text-white hover:bg-white/10">Log in</Link>
-              <Link href="/signup" className="rounded-full bg-gradient-to-r from-violet-600 to-pink-600 px-4 py-2 text-sm font-bold text-white shadow-lg shadow-violet-900/40">Sign up</Link>
-            </>
-          )}
-        </div>
+       <Suspense fallback={<div className="h-10 w-40" />}>
+  <HeaderAuth />
+</Suspense>
       </header>
 
       <main className="relative mx-auto grid max-w-6xl items-center gap-10 px-6 pb-16 pt-6 lg:grid-cols-2 lg:pt-14">
@@ -48,16 +40,9 @@ export default async function Home() {
           <p className="mt-6 max-w-lg text-lg text-slate-300">
             Communities fund tasks. Freelancers deliver. Every approved task becomes a credential anyone can verify.
           </p>
-          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-            <Link href={signedIn ? "/dashboard" : "/signup"} className="rounded-2xl bg-gradient-to-r from-violet-600 to-pink-600 px-7 py-3.5 text-center font-bold text-white shadow-xl shadow-violet-900/50 transition hover:-translate-y-0.5">
-              {signedIn ? "Open dashboard" : "Get started free"}
-            </Link>
-            {!signedIn && (
-              <Link href="/login" className="rounded-2xl border border-white/25 bg-white/5 px-7 py-3.5 text-center font-semibold text-white backdrop-blur transition hover:-translate-y-0.5 hover:bg-white/10">
-                Log in
-              </Link>
-            )}
-          </div>
+         <Suspense fallback={<div className="mt-8 h-14" />}>
+  <HeroAuth />
+</Suspense>
         </div>
         <PassportScene />
       </main>
