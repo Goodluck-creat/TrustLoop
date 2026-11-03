@@ -24,7 +24,9 @@ export default async function Dashboard() {
 
   const isOrg = user.role === "ORG";
   const tasks = await db.task.findMany({
-    where: isOrg ? { orgId: user.id } : { status: "FUNDED" },
+    where: isOrg
+  ? { orgId: user.id }
+  : { OR: [{ status: "FUNDED" }, { contributorId: user.id }] },
     orderBy: { createdAt: "desc" },
   });
 
@@ -54,7 +56,7 @@ export default async function Dashboard() {
           <div key={t.id} className="rounded-2xl border border-white/80 bg-white/70 p-5 shadow-sm backdrop-blur">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <p className="font-bold text-slate-800">{t.title}</p>
+                <Link href={`/tasks/${t.id}`} className="font-bold text-indigo-700 underline">{t.title}</Link>
                 <p className="text-sm text-slate-500">Due {t.deadline.toLocaleDateString("en-NG")}</p>
               </div>
               <span className={`rounded-full px-3 py-1 text-xs font-bold ${label[t.status].cls}`}>{label[t.status].text}</span>
