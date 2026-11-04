@@ -9,7 +9,7 @@ const hidden = { backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden
 function Person({ id, skin, shirt, hair, title, sub }: { id: string; skin: string; shirt: string; hair: string; title: string; sub: string }) {
   return (
     <div className="flex flex-col items-center gap-2">
-      <svg viewBox="0 0 120 150" className="h-28 w-24 drop-shadow-[0_18px_25px_rgba(18,61,50,0.35)] sm:h-36 sm:w-28" aria-hidden="true">
+      <svg viewBox="0 0 120 150" className="h-24 w-20 drop-shadow-[0_18px_25px_rgba(0,0,0,0.35)] sm:h-36 sm:w-28" aria-hidden="true">
         <defs>
           <radialGradient id={`s-${id}`} cx="35%" cy="25%" r="80%">
             <stop offset="0" stopColor="#fff" stopOpacity="0.45" />
@@ -25,9 +25,9 @@ function Person({ id, skin, shirt, hair, title, sub }: { id: string; skin: strin
         <circle cx="70" cy="52" r="3" fill="#2b1810" />
         <path d="M51 62 Q60 69 69 62" stroke="#5b2a1a" strokeWidth="3" fill="none" strokeLinecap="round" />
       </svg>
-      <div className="rounded-2xl border border-ink/10 bg-white px-3 py-2 text-center shadow-md shadow-ink/10">
-        <p className="text-sm font-bold text-ink">{title}</p>
-        <p className="text-xs text-muted">{sub}</p>
+      <div className="rounded-2xl border border-ink/10 bg-white px-3 py-1.5 text-center shadow-md shadow-black/20">
+        <p className="text-xs font-bold text-ink sm:text-sm">{title}</p>
+        <p className="text-[10px] text-muted sm:text-xs">{sub}</p>
       </div>
     </div>
   );
@@ -80,37 +80,37 @@ export default function PassportScene() {
       onPointerUp={up}
       onPointerCancel={up}
       style={{ touchAction: "pan-y" }}
-      className="relative mx-auto flex h-[480px] w-full max-w-[540px] cursor-grab select-none items-center justify-center active:cursor-grabbing"
+      className="relative mx-auto flex h-[400px] w-full max-w-[540px] cursor-grab select-none items-center justify-center active:cursor-grabbing sm:h-[480px]"
     >
-      <div className="pointer-events-none absolute inset-x-8 top-1/2 h-40 -translate-y-1/2 rounded-full bg-sage/50 blur-3xl" />
+      <div className="pointer-events-none absolute inset-x-8 top-1/2 h-40 -translate-y-1/2 rounded-full bg-sage/30 blur-3xl" />
 
-      <div className="pointer-events-none absolute bottom-2 left-0 z-10 tl-float"><Person id="hirer" skin="#f1c7a0" shirt="#6366f1" hair="#2b1810" title="Hirer" sub="Posts a funded task" /></div>
-      <div className="pointer-events-none absolute right-0 top-2 z-10 tl-float-b"><Person id="free" skin="#8d5a3b" shirt="#ec4899" hair="#120a06" title="Freelancer" sub="Gets paid + credential" /></div>
+      <div className="pointer-events-none absolute bottom-6 left-0 z-10 tl-float"><Person id="hirer" skin="#f1c7a0" shirt="#B58B55" hair="#2b1810" title="Hirer" sub="Posts a funded task" /></div>
+      <div className="pointer-events-none absolute right-0 top-2 z-10 tl-float-b"><Person id="free" skin="#8d5a3b" shirt="#A7B7A6" hair="#120a06" title="Freelancer" sub="Gets paid + credential" /></div>
       <div className="tl-coin pointer-events-none top-[46%] z-20 flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-amber-200 to-amber-400 text-lg font-bold text-amber-900 shadow-lg">₦</div>
 
       <div style={{ perspective: "1200px" }}>
         <div
-          className="relative h-[340px] w-[240px] sm:h-[380px] sm:w-[270px]"
+          className="relative h-[320px] w-[230px] sm:h-[380px] sm:w-[270px]"
           style={{ transformStyle: "preserve-3d", transform: `rotateX(${rot.x}deg) rotateY(${rot.y}deg)` }}
         >
           {/* FRONT */}
-          <div style={hidden} className="absolute inset-0 rounded-3xl bg-gradient-to-br from-[#123D32] via-[#1b5a49] to-[#2c6b57] p-5 text-white shadow-2xl ring-1 ring-white/30">
+          <div style={hidden} className="absolute inset-0 rounded-3xl bg-gradient-to-br from-[#1f6b55] via-[#2c6b57] to-[#4a8a74] p-5 text-white shadow-2xl ring-1 ring-white/30">
             <div className="flex items-center justify-between">
-              <span className="text-[10px] font-bold tracking-[0.2em] text-indigo-100">TRUST PASSPORT</span>
+              <span className="text-[10px] font-bold tracking-[0.2em] text-white/80">TRUST PASSPORT</span>
               <span className="rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-bold text-white">Sample</span>
             </div>
             <div className="mt-4 flex items-center gap-3">
               <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white/20 text-lg font-bold">AO</div>
               <div>
                 <p className="font-bold">Ada Okafor</p>
-                <p className="text-xs text-indigo-100">Brand designer</p>
+                <p className="text-xs text-white/80">Brand designer</p>
               </div>
             </div>
             <div className="mt-4 grid grid-cols-3 gap-2 text-center">
               {[["5", "Verified"], ["12", "Followers"], ["4", "Hirers"]].map(([n, l]) => (
                 <div key={l} className="rounded-xl bg-white/15 py-2">
                   <p className="text-lg font-bold">{n}</p>
-                  <p className="text-[10px] text-indigo-100">{l}</p>
+                  <p className="text-[10px] text-white/80">{l}</p>
                 </div>
               ))}
             </div>
@@ -125,28 +125,28 @@ export default function PassportScene() {
             <span style={{ transform: "translateZ(55px)" }} className="absolute -right-4 top-14 flex items-center gap-1 rounded-full bg-white px-3 py-1 text-xs font-bold text-emerald-700 shadow-lg">
               <Check className="h-3 w-3" aria-hidden />Paid
             </span>
-            <span style={{ transform: "translateZ(35px)" }} className="absolute -left-4 bottom-12 flex items-center gap-1 rounded-full bg-amber-300 px-3 py-1 text-xs font-bold text-amber-900 shadow-lg">
+            <span style={{ transform: "translateZ(35px)" }} className="absolute -left-4 bottom-12 flex items-center gap-1 rounded-full bg-sand px-3 py-1 text-xs font-bold text-ink shadow-lg">
               <Check className="h-3 w-3" aria-hidden />Signed
             </span>
           </div>
 
           {/* BACK */}
-          <div style={{ ...hidden, transform: "rotateY(180deg)" }} className="absolute inset-0 rounded-3xl bg-gradient-to-br from-[#17221F] via-[#123D32] to-[#1b5a49] p-5 text-white shadow-2xl ring-1 ring-white/20">
-            <p className="text-[10px] font-bold tracking-[0.2em] text-indigo-200">SCAN TO VERIFY</p>
+          <div style={{ ...hidden, transform: "rotateY(180deg)" }} className="absolute inset-0 rounded-3xl bg-gradient-to-br from-[#17221F] via-[#123D32] to-[#1b5a49] p-5 text-white shadow-2xl ring-1 ring-white/30">
+            <p className="text-[10px] font-bold tracking-[0.2em] text-white/80">SCAN TO VERIFY</p>
             <div className="mx-auto mt-4 grid w-40 grid-cols-9 gap-[3px] rounded-2xl bg-white p-3">
-              {qr.map((on, i) => (<span key={i} className={`aspect-square rounded-[2px] ${on ? "bg-indigo-900" : "bg-indigo-100"}`} />))}
+              {qr.map((on, i) => (<span key={i} className={`aspect-square rounded-[2px] ${on ? "bg-forest" : "bg-cream"}`} />))}
             </div>
             <p className="mt-4 flex items-center justify-center gap-1 text-center text-sm font-bold text-emerald-300"><Check className="h-4 w-4" aria-hidden />Signature valid</p>
-            <p className="mt-1 text-center text-xs text-slate-300">Approved by issuer · Payment released</p>
-            <p className="mt-4 rounded-xl bg-white/10 px-3 py-2 text-center font-mono text-[11px] text-slate-200">Ed25519 · signed record</p>
+            <p className="mt-1 text-center text-xs text-white/70">Approved by issuer · Payment released</p>
+            <p className="mt-4 rounded-xl bg-white/10 px-3 py-2 text-center font-mono text-[11px] text-white/90">Ed25519 · signed record</p>
           </div>
         </div>
       </div>
 
-      <div className="pointer-events-none absolute right-4 bottom-8 z-10 tl-float-b flex items-center gap-2 rounded-2xl bg-white px-4 py-3 text-sm font-semibold text-ink shadow-lg shadow-ink/10">
+      <div className="pointer-events-none absolute right-2 bottom-10 z-10 tl-float-b flex items-center gap-2 rounded-2xl bg-white px-3 py-2 text-xs font-semibold text-ink shadow-lg shadow-black/20 sm:right-4 sm:px-4 sm:py-3 sm:text-sm">
         <Check className="h-4 w-4 text-emerald-700" aria-hidden /> Payment released
       </div>
-      <p className="pointer-events-none absolute bottom-0 w-full text-center text-xs text-muted">Drag to rotate the Trust Passport</p>
+      <p className="pointer-events-none absolute bottom-0 w-full text-center text-xs text-white/70">Drag to rotate the Trust Passport</p>
     </div>
   );
 }
