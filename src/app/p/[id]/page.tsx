@@ -1,18 +1,21 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { BadgeCheck, UserPlus, ArrowUpRight, Pencil } from "lucide-react";
+import { BadgeCheck, UserPlus, ArrowUpRight, Pencil, ExternalLink, Plus } from "lucide-react";
 import Shell from "@/components/Shell";
 import Avatar from "@/components/Avatar";
 import Cover from "@/components/Cover";
+import { LevelPill } from "@/components/TrustBadges";
 import { db } from "@/lib/db";
 import { getUserId } from "@/lib/session";
 import { avatarSrc, coverSrc } from "@/lib/images";
+import { externalLevel } from "@/lib/trust";
 import { toggleFollow } from "@/app/actions/social";
 import { card, pill } from "@/lib/ui";
 
 export const instant = false;
 
 const tiles = ["from-forest to-[#2c6b57]", "from-bronze to-[#8a6638]", "from-[#6f8a73] to-[#3f6652]", "from-[#2c6b57] to-forest"];
+const order = { CONFIRMED: 0, CHECKED: 1, SELF: 2, DISPUTED: 3 } as const;
 
 export default async function PassportPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -31,6 +34,11 @@ export default async function PassportPage({ params }: { params: Promise<{ id: s
     orderBy: { createdAt: "desc" },
     take: 30,
   });
+  const external = isOrg
+    ? []
+    : (await db.externalWork.findMany({ where: { userId: id }, orderBy: { createdAt: "desc" }, take: 20 }))
+        .map((w) => ({ w, level: externalLevel(w) }))
+        .sort((a, b) => order[a.level] - order[b.level]);
   const isFollowing = viewerId
     ? Boolean(await db.follow.findUnique({ where: { followerId_followingId: { followerId: viewerId, followingId: id } } }))
     : false;
@@ -82,12 +90,12 @@ export default async function PassportPage({ params }: { params: Promise<{ id: s
         </div>
       </div>
 
-      <h2 className="mb-3 mt-8 text-xl font-bold">{isOrg ? "Work they approved and paid for" : "Verified work"}</h2>
+      <h2 className="mb-3 mt-8 text-xl font-bold">{isOrg ? "Work they approved and paid for" : "Verified on TrustLoop"}</h2>
       {creds.length === 0 && <p className={`${card} p-6 text-muted`}>No verified work yet.</p>}
       <div className="grid gap-4 sm:grid-cols-2">
         {creds.map((c, i) => (
           <Link key={c.id} href={`/verify/${c.id}`} className={`${card} group flex items-center gap-4 p-5 transition hover:-translate-y-1 hover:bg-cream`}>
-            <div className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br ${tiles[i % tiles.length]}`}>
+            <div className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br text-white ${tiles[i % tiles.length]}`}>
               <BadgeCheck className="h-7 w-7" aria-hidden />
             </div>
             <div className="min-w-0 flex-1">
@@ -97,11 +105,52 @@ export default async function PassportPage({ params }: { params: Promise<{ id: s
               </p>
               <span className={`${pill} mt-2 bg-emerald-100 text-emerald-800 ring-emerald-600/20`}>Verified</span>
             </div>
-            <ArrowUpRight className="h-5 w-5 shrink-0 text-muted transition group-hover:text-white" aria-hidden />
+            <ArrowUpRight className="h-5 w-5 shrink-0 text-muted transition group-hover:text-forest" aria-hidden />
           </Link>
         ))}
       </div>
-      <p className="mt-6 text-xs text-muted">This record is evidence of specific, signed projects. It is not a score.</p>
+
+      {!isOrg && (external.length > 0 || isSelf) && (
+        <>
+          <div className="mb-3 mt-10 flex flex-wrap items-center justify-between gap-3">
+            <h2 className="text-xl font-bold">Outside work</h2>
+            {isSelf && (
+              <Link href="/outside-work" className="inline-flex items-center gap-1 rounded-full border border-ink/20 px-4 py-2 text-sm font-semibold hover:bg-cream">
+                <Plus className="h-4 w-4" aria-hidden /> Add or manage
+              </Link>
+            )}
+          </div>
+          {external.length === 0 && <p className={`${card} p-6 text-muted`}>Add work you did elsewhere. We check the link, and a referee can confirm it.</p>}
+          <div className="grid gap-4 sm:grid-cols-2">
+            {external.map(({ w, level }) => {
+              let host = "";
+              try { host = new URL(w.evidenceUrl).hostname; } catch {}
+              const domain = w.refereeEmail ? w.refereeEmail.split("@")[1] : null;
+              return (
+                <article key={w.id} className={`${card} space-y-2 p-5`}>
+                  <div className="flex flex-wrap items-start justify-between gap-2">
+                    <p className="font-bold">{w.title}</p>
+                    <LevelPill level={level} />
+                  </div>
+                  <p className="line-clamp-3 text-sm text-ink/80">{w.description}</p>
+                  <a href={w.evidenceUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 break-all text-sm font-semibold text-forest underline">
+                    {host || "View evidence"} <ExternalLink className="h-3.5 w-3.5 shrink-0" aria-hidden />
+                  </a>
+                  {w.respondedAt && (
+                    <p className="text-xs text-muted">
+                      {w.refereeResponse === "CONFIRMED" ? "Confirmed" : "Disputed"} by {w.refereeName}
+                      {domain ? ` (@${domain})` : ""}
+                    </p>
+                  )}
+                </article>
+              );
+            })}
+          </div>
+          <p className="mt-3 text-xs text-muted">Outside work is not signed by TrustLoop. The label shows how much evidence stands behind each item.</p>
+        </>
+      )}
+
+      <p className="mt-6 text-xs text-muted">Verified work is evidence of specific, signed projects. It is not a score.</p>
     </Shell>
   );
 }

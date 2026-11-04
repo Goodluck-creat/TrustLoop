@@ -1,12 +1,15 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { ArrowLeft, Check, Clock, ExternalLink, BadgeCheck, PencilLine, Wallet } from "lucide-react";
+import { ArrowLeft, Check, Clock, ExternalLink, BadgeCheck, PencilLine, Wallet, Users } from "lucide-react";
 import Shell from "@/components/Shell";
 import Avatar from "@/components/Avatar";
+import TrustBadges from "@/components/TrustBadges";
 import { db } from "@/lib/db";
 import { getUserId } from "@/lib/session";
 import { avatarSrc } from "@/lib/images";
-import { acceptTask, submitWork, approveTask, requestChanges } from "@/app/actions/work";
+import { trustSummary } from "@/lib/trust";
+import { submitWork, approveTask, requestChanges } from "@/app/actions/work";
+import { applyToTask, withdrawApplication, assignApplicant, declineApplicant } from "@/app/actions/applications";
 import { STATUS, pill, card, input } from "@/lib/ui";
 
 export const instant = false;
@@ -15,7 +18,7 @@ const errors: Record<string, string> = {
   url: "Enter a valid link starting with https://",
   note: "Write at least 5 characters explaining what to change.",
 };
-const steps = ["Funded", "Accepted", "Submitted", "Approved and paid"];
+const steps = ["Funded", "Assigned", "Submitted", "Approved and paid"];
 const current: Record<string, number> = { AWAITING_FUNDING: -1, FUNDED: 0, ASSIGNED: 1, SUBMITTED: 2, APPROVED: 3, PAID: 3 };
 const primary = "flex w-full items-center justify-center gap-2 rounded-xl bg-forest text-white hover:bg-[#0d2d25] px-5 py-3 font-bold text-white shadow-lg shadow-forest/20";
 
@@ -39,8 +42,22 @@ export default async function TaskPage({
 
   const isOwner = task.orgId === user.id;
   const isAssigned = task.contributorId === user.id;
-  const canAccept = user.role === "CONTRIBUTOR" && task.status === "FUNDED";
-  if (!isOwner && !isAssigned && !canAccept) notFound();
+  const myApp =
+    user.role === "CONTRIBUTOR" && !isOwner
+      ? await db.application.findUnique({ where: { taskId_contributorId: { taskId: task.id, contributorId: user.id } } })
+      : null;
+  const canApply = user.role === "CONTRIBUTOR" && task.status === "FUNDED" && !isOwner && (!myApp || myApp.status === "WITHDRAWN");
+  if (!isOwner && !isAssigned && !canApply && !myApp) notFound();
+
+  const applicants =
+    isOwner && task.status === "FUNDED"
+      ? await db.application.findMany({
+          where: { taskId: task.id, status: "PENDING" },
+          include: { contributor: true },
+          orderBy: { createdAt: "asc" },
+        })
+      : [];
+  const summaries = await Promise.all(applicants.map((a) => trustSummary(a.contributorId)));
 
   const last = task.submissions[0];
   const s = STATUS[task.status];
@@ -78,10 +95,57 @@ export default async function TaskPage({
 
           {e && errors[e] && <p role="alert" className="rounded-2xl bg-rose-100 px-4 py-3 text-sm font-semibold text-rose-800">{errors[e]}</p>}
 
-          {canAccept && (
-            <form action={acceptTask.bind(null, task.id)}>
-              <button className={primary}>Accept this task</button>
+          {canApply && (
+            <form action={applyToTask.bind(null, task.id)} className={`${card} space-y-3 p-6`}>
+              <h2 className="text-lg font-bold">Apply for this task</h2>
+              <p className="text-sm text-muted">The hirer will see your Trust Passport, including your verified work, and chooses who does the task.</p>
+              <textarea name="note" rows={3} maxLength={500} placeholder="Why are you a good fit? (optional)" className={input} />
+              <button className={primary}>Apply</button>
             </form>
+          )}
+
+          {myApp?.status === "PENDING" && (
+            <div className={`${card} space-y-3 p-6`}>
+              <p className="font-bold">Application sent</p>
+              <p className="text-sm text-muted">The hirer is reviewing applicants. You will get a notification when they choose.</p>
+              <form action={withdrawApplication.bind(null, task.id)}>
+                <button className="rounded-xl border border-ink/20 px-4 py-2 text-sm font-semibold hover:bg-cream">Withdraw application</button>
+              </form>
+            </div>
+          )}
+          {myApp?.status === "DECLINED" && !isAssigned && (
+            <p className={`${card} p-6 text-muted`}>This task went to another applicant. Keep applying, every verified job strengthens your passport.</p>
+          )}
+
+          {isOwner && task.status === "FUNDED" && (
+            <section className="space-y-3">
+              <h2 className="flex items-center gap-2 text-xl font-bold"><Users className="h-5 w-5" aria-hidden /> Applicants ({applicants.length})</h2>
+              {applicants.length === 0 && (
+                <p className={`${card} p-6 text-muted`}>No applicants yet. Contributors can see this task on their dashboard. You will be notified when someone applies.</p>
+              )}
+              {applicants.map((a, i) => (
+                <article key={a.id} className={`${card} space-y-4 p-5`}>
+                  <div className="flex items-center gap-3">
+                    <Avatar name={a.contributor.name} src={avatarSrc(a.contributor)} className="h-12 w-12" />
+                    <div className="min-w-0 flex-1">
+                      <Link href={`/p/${a.contributor.id}`} className="block truncate font-bold text-forest hover:underline">{a.contributor.name}</Link>
+                      <p className="text-xs text-muted">Applied {a.createdAt.toLocaleDateString("en-NG")}</p>
+                    </div>
+                    <Link href={`/p/${a.contributor.id}`} className="text-xs font-semibold text-muted underline hover:text-ink">Full passport</Link>
+                  </div>
+                  {a.note && <p className="rounded-2xl bg-cream/60 px-4 py-3 text-sm">{a.note}</p>}
+                  <TrustBadges s={summaries[i]} />
+                  <div className="grid grid-cols-2 gap-3">
+                    <form action={assignApplicant.bind(null, a.id)}>
+                      <button className={primary}>Assign this person</button>
+                    </form>
+                    <form action={declineApplicant.bind(null, a.id)}>
+                      <button className="w-full rounded-xl border border-ink/20 px-5 py-3 font-semibold hover:bg-cream">Decline</button>
+                    </form>
+                  </div>
+                </article>
+              ))}
+            </section>
           )}
 
           {isAssigned && task.status === "ASSIGNED" && last?.reviewNote && (
@@ -129,10 +193,10 @@ export default async function TaskPage({
             <div className="space-y-3 rounded-3xl bg-sage/30 p-6 ring-1 ring-emerald-600/20">
               <p className="flex items-center gap-2 font-bold text-emerald-800">
                 <Wallet className="h-5 w-5" aria-hidden />
-                {isOwner ? `Payment released to ${task.contributor?.name ?? "the contributor"}` : "Payment released to your balance"}
+                {isOwner ? `Payment released to ${task.contributor?.name ?? "the contributor"}` : "Payment released to your wallet"}
               </p>
               {task.credential && (
-                <Link href={`/verify/${task.credential.id}`} className="inline-flex items-center gap-2 font-semibold text-white underline">
+                <Link href={`/verify/${task.credential.id}`} className="inline-flex items-center gap-2 font-semibold text-forest underline">
                   <BadgeCheck className="h-5 w-5" aria-hidden /> View the verified credential
                 </Link>
               )}

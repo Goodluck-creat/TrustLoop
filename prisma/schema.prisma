@@ -57,6 +57,8 @@ model User {
   depositSandbox Boolean @default(false)
   ledger         LedgerEntry[]
   deposits       Deposit[]
+  applications  Application[]
+  externalWorks ExternalWork[]
 }
 
 model Task {
@@ -75,6 +77,7 @@ model Task {
   submissions   Submission[]
   payments      Payment[]
   credential    Credential?
+  applications Application[]
 }
 
 model Submission {
@@ -212,4 +215,47 @@ model Deposit {
   createdAt DateTime      @default(now())
 
   @@index([userId])
+}
+
+enum ApplicationStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  WITHDRAWN
+}
+
+model Application {
+  id            String            @id @default(cuid())
+  task          Task              @relation(fields: [taskId], references: [id])
+  taskId        String
+  contributor   User              @relation(fields: [contributorId], references: [id])
+  contributorId String
+  note          String?
+  status        ApplicationStatus @default(PENDING)
+  createdAt     DateTime          @default(now())
+
+  @@unique([taskId, contributorId])
+  @@index([taskId])
+}
+
+model ExternalWork {
+  id             String    @id @default(cuid())
+  user           User      @relation(fields: [userId], references: [id])
+  userId         String
+  title          String
+  description    String
+  evidenceUrl    String
+  clientName     String?
+  refereeToken   String    @unique
+  refereeName    String?
+  refereeEmail   String?
+  refereeComment String?
+  refereeResponse String?
+  respondedAt    DateTime?
+  check          Json?
+  checkedAt      DateTime?
+  createdAt      DateTime  @default(now())
+
+  @@index([userId])
+  @@index([evidenceUrl])
 }

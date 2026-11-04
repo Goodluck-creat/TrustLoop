@@ -15,20 +15,6 @@ async function me() {
   return user;
 }
 
-export async function acceptTask(taskId: string) {
-  const user = await me();
-  if (user.role !== "CONTRIBUTOR") redirect("/dashboard");
-  const res = await db.task.updateMany({
-    where: { id: taskId, status: "FUNDED", contributorId: null },
-    data: { status: "ASSIGNED", contributorId: user.id },
-  });
-  if (res.count === 1) {
-    const task = await db.task.findUnique({ where: { id: taskId } });
-    if (task) await notify(db, task.orgId, "Task accepted", `${user.name} accepted "${task.title}".`, `/tasks/${taskId}`);
-  }
-  redirect(res.count === 1 ? `/tasks/${taskId}` : "/dashboard");
-}
-
 export async function submitWork(taskId: string, formData: FormData) {
   const user = await me();
   const evidenceUrl = String(formData.get("evidenceUrl") ?? "").trim();

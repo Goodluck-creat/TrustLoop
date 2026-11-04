@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Bell, LayoutDashboard, BadgeCheck, LogOut } from "lucide-react";
+import { Bell, LayoutDashboard, BadgeCheck, LogOut, Wallet } from "lucide-react";
 import { db } from "@/lib/db";
 import { getUserId } from "@/lib/session";
 import { logout } from "@/app/actions/auth";
@@ -20,6 +20,7 @@ export default async function AppNav() {
         {userId ? (
           <nav className="flex items-center gap-1">
             <Link href="/dashboard" className={link}><LayoutDashboard className="h-5 w-5" aria-hidden /><span className={label}>Dashboard</span></Link>
+            <Link href="/wallet" className={link}><Wallet className="h-5 w-5" aria-hidden /><span className={label}>Wallet</span></Link>
             <Link href={`/p/${userId}`} className={link}><BadgeCheck className="h-5 w-5" aria-hidden /><span className={label}>Passport</span></Link>
             <Link href="/notifications" className={link}>
               <Bell className="h-5 w-5" aria-hidden /><span className={label}>Notifications</span>
@@ -36,7 +37,7 @@ export default async function AppNav() {
         ) : (
           <nav className="flex items-center gap-2">
             <Link href="/login" className="rounded-full border border-ink/20 px-4 py-2 text-sm font-semibold text-ink hover:bg-cream">Log in</Link>
-            <Link href="/signup" className="rounded-full bg-forest text-white hover:bg-[#0d2d25] px-4 py-2 text-sm font-bold text-white">Sign up</Link>
+            <Link href="/signup" className="rounded-full bg-forest px-4 py-2 text-sm font-bold text-white hover:bg-[#0d2d25]">Sign up</Link>
           </nav>
         )}
       </div>
