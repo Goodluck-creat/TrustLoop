@@ -1,7 +1,10 @@
 import { notFound, redirect } from "next/navigation";
+import { FlaskConical } from "lucide-react";
+import Shell from "@/components/Shell";
 import { db } from "@/lib/db";
 import { getUserId } from "@/lib/session";
 import { simulatePayment } from "@/app/actions/mock";
+import { card } from "@/lib/ui";
 
 export const instant = false;
 
@@ -14,18 +17,22 @@ export default async function MockPay({ params }: { params: Promise<{ reference:
   if (!payment || payment.task.orgId !== userId) notFound();
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-gradient-to-br from-violet-50 via-pink-50 to-sky-50 px-6">
-      <div className="w-full max-w-sm space-y-4 rounded-3xl border border-white/80 bg-white/70 p-8 shadow-xl backdrop-blur">
-        <p className="rounded-xl bg-amber-100 px-3 py-2 text-sm font-semibold text-amber-900">
-          Sandbox simulator. This is not the real Roqqu.
+    <Shell>
+      <div className={`${card} mx-auto max-w-md space-y-4 p-8`}>
+        <p className="flex items-center gap-2 rounded-xl bg-amber-400/15 px-3 py-2 text-sm font-semibold text-amber-200">
+          <FlaskConical className="h-4 w-4 shrink-0" aria-hidden /> Sandbox simulator. This is not the real Roqqu.
         </p>
-        <h1 className="text-xl font-bold text-slate-800">Pay for “{payment.task.title}”</h1>
-        <p className="text-3xl font-extrabold text-indigo-700">₦{payment.task.rewardNgn.toLocaleString("en-NG")}</p>
-        <p className="text-xs text-slate-500">Reference: {payment.reference}</p>
+        <h1 className="text-xl font-bold">Pay for &ldquo;{payment.task.title}&rdquo;</h1>
+        <p className="bg-gradient-to-r from-violet-300 to-pink-300 bg-clip-text text-4xl font-extrabold text-transparent">
+          ₦{payment.task.rewardNgn.toLocaleString("en-NG")}
+        </p>
+        <p className="text-xs text-slate-400">Reference: {payment.reference}</p>
         <form action={simulatePayment.bind(null, payment.reference)}>
-          <button className="w-full rounded-xl bg-indigo-600 px-4 py-3 font-semibold text-white">Simulate payment confirmed</button>
+          <button className="w-full rounded-xl bg-gradient-to-r from-violet-600 to-pink-600 px-5 py-3 font-bold text-white shadow-lg shadow-violet-900/40">
+            Simulate payment confirmed
+          </button>
         </form>
       </div>
-    </main>
+    </Shell>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type PointerEvent } from "react";
+import { Check } from "lucide-react";
 
 const qr = Array.from({ length: 81 }, (_, i) => (i * 7 + (i >> 3) * 5) % 3 === 0);
 const hidden = { backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden", transformStyle: "preserve-3d" } as const;
@@ -83,7 +84,7 @@ export default function PassportScene() {
     >
       <div className="pointer-events-none absolute inset-x-8 top-1/2 h-40 -translate-y-1/2 rounded-full bg-violet-500/30 blur-3xl" />
 
-      <div className="pointer-events-none absolute bottom-2 left-0 z-10 tl-float"><Person id="hirer" skin="#f1c7a0" shirt="#6366f1" hair="#2b1810" title="Hirer" sub="Posts a ₦20,000 task" /></div>
+      <div className="pointer-events-none absolute bottom-2 left-0 z-10 tl-float"><Person id="hirer" skin="#f1c7a0" shirt="#6366f1" hair="#2b1810" title="Hirer" sub="Posts a funded task" /></div>
       <div className="pointer-events-none absolute right-0 top-2 z-10 tl-float-b"><Person id="free" skin="#8d5a3b" shirt="#ec4899" hair="#120a06" title="Freelancer" sub="Gets paid + credential" /></div>
       <div className="tl-coin pointer-events-none top-[46%] z-20 flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-amber-200 to-amber-400 text-lg font-bold text-amber-900 shadow-lg">₦</div>
 
@@ -96,7 +97,7 @@ export default function PassportScene() {
           <div style={hidden} className="absolute inset-0 rounded-3xl bg-gradient-to-br from-indigo-600 via-violet-600 to-fuchsia-600 p-5 text-white shadow-2xl ring-1 ring-white/30">
             <div className="flex items-center justify-between">
               <span className="text-[10px] font-bold tracking-[0.2em] text-indigo-100">TRUST PASSPORT</span>
-              <span className="rounded-full bg-emerald-400/25 px-2 py-0.5 text-[10px] font-bold text-emerald-100">Sample</span>
+              <span className="rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-bold text-white">Sample</span>
             </div>
             <div className="mt-4 flex items-center gap-3">
               <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white/20 text-lg font-bold">AO</div>
@@ -106,7 +107,7 @@ export default function PassportScene() {
               </div>
             </div>
             <div className="mt-4 grid grid-cols-3 gap-2 text-center">
-              {[["5", "Tasks"], ["5", "Verified"], ["0", "Disputes"]].map(([n, l]) => (
+              {[["5", "Verified"], ["12", "Followers"], ["4", "Hirers"]].map(([n, l]) => (
                 <div key={l} className="rounded-xl bg-white/15 py-2">
                   <p className="text-lg font-bold">{n}</p>
                   <p className="text-[10px] text-indigo-100">{l}</p>
@@ -116,12 +117,17 @@ export default function PassportScene() {
             <ul className="mt-4 space-y-2 text-xs">
               {["Logo design", "Poster design", "Website testing"].map((t) => (
                 <li key={t} className="flex items-center justify-between rounded-xl bg-white/15 px-3 py-2">
-                  <span>{t}</span><span className="font-bold text-emerald-200">✓ Verified</span>
+                  <span>{t}</span>
+                  <span className="flex items-center gap-1 font-bold text-emerald-200"><Check className="h-3 w-3" aria-hidden />Verified</span>
                 </li>
               ))}
             </ul>
-            <span style={{ transform: "translateZ(55px)" }} className="absolute -right-4 top-14 rounded-full bg-white px-3 py-1 text-xs font-bold text-emerald-700 shadow-lg">✓ Paid</span>
-            <span style={{ transform: "translateZ(35px)" }} className="absolute -left-4 bottom-12 rounded-full bg-amber-300 px-3 py-1 text-xs font-bold text-amber-900 shadow-lg">On-chain ✓</span>
+            <span style={{ transform: "translateZ(55px)" }} className="absolute -right-4 top-14 flex items-center gap-1 rounded-full bg-white px-3 py-1 text-xs font-bold text-emerald-700 shadow-lg">
+              <Check className="h-3 w-3" aria-hidden />Paid
+            </span>
+            <span style={{ transform: "translateZ(35px)" }} className="absolute -left-4 bottom-12 flex items-center gap-1 rounded-full bg-amber-300 px-3 py-1 text-xs font-bold text-amber-900 shadow-lg">
+              <Check className="h-3 w-3" aria-hidden />Signed
+            </span>
           </div>
 
           {/* BACK */}
@@ -130,13 +136,16 @@ export default function PassportScene() {
             <div className="mx-auto mt-4 grid w-40 grid-cols-9 gap-[3px] rounded-2xl bg-white p-3">
               {qr.map((on, i) => (<span key={i} className={`aspect-square rounded-[2px] ${on ? "bg-indigo-900" : "bg-indigo-100"}`} />))}
             </div>
-            <p className="mt-4 text-center text-sm font-bold text-emerald-300">✓ Hash matches on-chain record</p>
-            <p className="mt-1 text-center text-xs text-slate-300">Approved by issuer · Payment confirmed</p>
-            <p className="mt-4 rounded-xl bg-white/10 px-3 py-2 text-center font-mono text-[11px] text-slate-200">Base · 0x9f3a…c21b</p>
+            <p className="mt-4 flex items-center justify-center gap-1 text-center text-sm font-bold text-emerald-300"><Check className="h-4 w-4" aria-hidden />Signature valid</p>
+            <p className="mt-1 text-center text-xs text-slate-300">Approved by issuer · Payment released</p>
+            <p className="mt-4 rounded-xl bg-white/10 px-3 py-2 text-center font-mono text-[11px] text-slate-200">Ed25519 · signed record</p>
           </div>
         </div>
       </div>
 
+      <div className="pointer-events-none absolute right-4 bottom-8 z-10 tl-float-b flex items-center gap-2 rounded-2xl bg-white/10 px-4 py-3 text-sm font-semibold backdrop-blur-md">
+        <Check className="h-4 w-4 text-emerald-300" aria-hidden /> Payment released
+      </div>
       <p className="pointer-events-none absolute bottom-0 w-full text-center text-xs text-slate-300">Drag to rotate the Trust Passport</p>
     </div>
   );

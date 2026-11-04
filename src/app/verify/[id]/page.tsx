@@ -2,16 +2,30 @@ import Link from "next/link";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import QRCode from "qrcode";
+import { Check, ShieldCheck, ShieldX, X } from "lucide-react";
+import Shell from "@/components/Shell";
 import { db } from "@/lib/db";
 import { checkCredential, publicKeyHex } from "@/lib/credentials";
+import { card } from "@/lib/ui";
 
 export const instant = false;
 
 type Payload = {
-  title: string; criteria: string[]; rewardNgn: number;
+  title: string; criteria: string[];
   issuer: { id: string; name: string }; contributor: { id: string; name: string };
   issuedAt: string; payoutRef: string; txHash: string | null;
 };
+
+function Row({ ok, label, value }: { ok: boolean; label: string; value: string }) {
+  return (
+    <li className="flex items-start gap-3 rounded-2xl bg-white/5 px-4 py-3 text-sm">
+      <span className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full ${ok ? "bg-emerald-400 text-emerald-950" : "bg-rose-400 text-rose-950"}`}>
+        {ok ? <Check className="h-3.5 w-3.5" aria-hidden /> : <X className="h-3.5 w-3.5" aria-hidden />}
+      </span>
+      <span><b>{label}:</b> {value}</span>
+    </li>
+  );
+}
 
 export default async function VerifyPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -21,7 +35,7 @@ export default async function VerifyPage({ params }: { params: Promise<{ id: str
   const p = cred.payload as unknown as Payload;
   const { unchanged, signatureValid } = checkCredential(cred.payload, cred.hash, cred.signature);
   const valid = unchanged && signatureValid;
-  const simulated = p.txHash?.startsWith("mock_") ?? false;
+  const simulated = !p.txHash || p.txHash.startsWith("mock_");
 
   const h = await headers();
   const host = h.get("x-forwarded-host") ?? h.get("host") ?? "";
@@ -30,43 +44,56 @@ export default async function VerifyPage({ params }: { params: Promise<{ id: str
   const qr = await QRCode.toString(url, { type: "svg", margin: 1, width: 176, color: { dark: "#312E81", light: "#FFFFFF" } });
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-violet-50 via-pink-50 to-sky-50 px-6 py-10 text-slate-800">
-      <div className="mx-auto max-w-xl space-y-4">
-        <div className={`rounded-3xl p-6 text-white shadow-xl ${valid ? "bg-gradient-to-br from-indigo-600 to-violet-600" : "bg-red-700"}`}>
-          <p className="text-xs font-bold tracking-widest opacity-80">TRUSTLOOP CREDENTIAL</p>
-          <h1 className="mt-2 text-2xl font-bold">{valid ? "✓ Credential verified" : "✗ Verification failed"}</h1>
-          <p className="mt-1 text-sm opacity-90">
-            {valid ? "The record is unchanged and the signature is valid." : "This record was altered or the signature does not match."}
-          </p>
+    <Shell>
+      <div className="mx-auto max-w-2xl space-y-5">
+        <div className={`rounded-3xl p-6 shadow-xl ${valid ? "bg-gradient-to-br from-emerald-500 via-teal-500 to-indigo-600" : "bg-gradient-to-br from-rose-600 to-red-800"}`}>
+          <div className="flex items-center gap-4">
+            <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-white/20">
+              {valid ? <ShieldCheck className="h-8 w-8" aria-hidden /> : <ShieldX className="h-8 w-8" aria-hidden />}
+            </span>
+            <div>
+              <p className="text-xs font-bold tracking-widest text-white/80">TRUSTLOOP CREDENTIAL</p>
+              <h1 className="text-2xl font-extrabold">{valid ? "Credential verified" : "Verification failed"}</h1>
+              <p className="text-sm text-white/90">
+                {valid ? "The record is unchanged and the signature is valid." : "This record was altered or the signature does not match."}
+              </p>
+            </div>
+          </div>
         </div>
 
-        <div className="space-y-2 rounded-3xl border border-white/80 bg-white/70 p-6 backdrop-blur">
-          <h2 className="text-xl font-bold">{p.title}</h2>
-          <p>Completed by <Link href={`/p/${p.contributor.id}`} className="font-bold text-indigo-700 underline">{p.contributor.name}</Link></p>
-          <p>Approved and paid by <Link href={`/p/${p.issuer.id}`} className="font-bold text-indigo-700 underline">{p.issuer.name}</Link></p>
-          
-          <p className="text-sm text-slate-500">Issued {new Date(p.issuedAt).toLocaleDateString("en-NG")}</p>
-          <ul className="list-disc space-y-1 pl-5">
-            {p.criteria.map((c) => (<li key={c}>{c}</li>))}
+        <div className={`${card} space-y-3 p-6`}>
+          <h2 className="text-2xl font-extrabold">{p.title}</h2>
+          <p className="text-slate-200">Completed by <Link href={`/p/${p.contributor.id}`} className="font-bold text-violet-200 underline">{p.contributor.name}</Link></p>
+          <p className="text-slate-200">Approved and paid by <Link href={`/p/${p.issuer.id}`} className="font-bold text-violet-200 underline">{p.issuer.name}</Link></p>
+          <p className="text-sm text-slate-400">Issued {new Date(p.issuedAt).toLocaleDateString("en-NG")}</p>
+          <ul className="space-y-2">
+            {p.criteria.map((c) => (
+              <li key={c} className="flex items-start gap-3 rounded-2xl bg-white/5 px-4 py-2.5 text-sm text-slate-100">
+                <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-300" aria-hidden />{c}
+              </li>
+            ))}
           </ul>
         </div>
 
-        <div className="flex flex-col items-center gap-2 rounded-3xl border border-white/80 bg-white/70 p-6 backdrop-blur">
+        <div className={`${card} flex flex-col items-center gap-2 p-6`}>
           <div role="img" aria-label="QR code linking to this credential" className="rounded-2xl bg-white p-2" dangerouslySetInnerHTML={{ __html: qr }} />
-          <p className="text-sm font-semibold">Scan to verify this credential</p>
-          <p className="break-all text-center text-xs text-slate-500">{url}</p>
+          <p className="font-semibold">Scan to verify this credential</p>
+          <p className="break-all text-center text-xs text-slate-400">{url}</p>
         </div>
 
-        <div className="space-y-2 rounded-3xl border border-white/80 bg-white/70 p-6 text-sm backdrop-blur">
-          <p><b>Approved by issuer:</b> Yes</p>
-          <p><b>Payment:</b> {p.txHash && !simulated ? "Confirmed on-chain" : "Released to the contributor (sandbox, not real money)"}</p>
-          <p><b>Signature:</b> {signatureValid ? "Valid (Ed25519)" : "Invalid"}</p>
-          <p><b>Record unchanged:</b> {unchanged ? "Yes" : "No"}</p>
-          <p><b>On-chain anchor:</b> {cred.anchorTx ?? "Not anchored yet (planned: Base)"}</p>
-          <p className="break-all text-xs text-slate-500">Hash: {cred.hash}</p>
-          <p className="break-all text-xs text-slate-500">Issuer public key: {publicKeyHex()}</p>
+        <div className={`${card} space-y-3 p-6`}>
+          <h2 className="text-lg font-bold">Verification details</h2>
+          <ul className="space-y-2">
+            <Row ok label="Approved by issuer" value="Yes" />
+            <Row ok label="Payment" value={simulated ? "Released to the contributor (sandbox, not real money)" : "Confirmed on-chain"} />
+            <Row ok={signatureValid} label="Signature" value={signatureValid ? "Valid (Ed25519)" : "Invalid"} />
+            <Row ok={unchanged} label="Record unchanged" value={unchanged ? "Yes" : "No"} />
+            <Row ok={Boolean(cred.anchorTx)} label="On-chain anchor" value={cred.anchorTx ?? "Not anchored yet (planned: Base)"} />
+          </ul>
+          <p className="break-all text-xs text-slate-400">Hash: {cred.hash}</p>
+          <p className="break-all text-xs text-slate-400">Issuer public key: {publicKeyHex()}</p>
         </div>
       </div>
-    </main>
+    </Shell>
   );
 }
