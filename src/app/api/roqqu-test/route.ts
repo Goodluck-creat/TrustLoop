@@ -10,12 +10,14 @@ export async function GET() {
       headers: {
         "x-staging-api-key": key.trim(),
         "Content-Type": "application/x-www-form-urlencoded",
+        Accept: "application/json",
+        "User-Agent": "TrustLoop/1.0 (hackathon; +https://trust-loop-theta.vercel.app)",
       },
       body: new URLSearchParams({ token: "usdt" }),
       signal: AbortSignal.timeout(15000),
     });
     const text = await res.text();
-    return Response.json({ httpStatus: res.status, body: text.slice(0, 600) });
+    return Response.json({ httpStatus: res.status, body: text.slice(0, 300) });
   } catch (e) {
     return Response.json({ error: String(e) }, { status: 502 });
   }
