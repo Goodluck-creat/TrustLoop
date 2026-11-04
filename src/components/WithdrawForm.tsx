@@ -6,7 +6,7 @@ import { requestWithdrawal } from "@/app/actions/withdraw";
 import { input } from "@/lib/ui";
 
 const NETWORKS: Record<string, string[]> = { USDC: ["BASE"], USDT: ["TRC20", "BEP20"] };
-const lab = "mb-1 block text-xs font-semibold text-slate-300";
+const lab = "mb-1 block text-xs font-semibold text-muted";
 
 export default function WithdrawForm({ balance }: { balance: number }) {
   const [error, action, pending] = useActionState(requestWithdrawal, null);
@@ -32,11 +32,11 @@ export default function WithdrawForm({ balance }: { balance: number }) {
       <label className="block"><span className={lab}>Wallet address</span>
         <input name="address" required placeholder="Paste your wallet address" className={input} />
       </label>
-      {error && <p role="alert" className="text-sm font-semibold text-rose-300">{error}</p>}
-      <button disabled={pending || balance < 100} className="flex w-full items-center justify-center gap-2 rounded-xl bg-white px-5 py-3 font-bold text-indigo-900 disabled:opacity-50">
+      {error && <p role="alert" className="text-sm font-semibold text-rose-700">{error}</p>}
+      <button disabled={pending || balance < 100} className="flex w-full items-center justify-center gap-2 rounded-xl bg-forest px-5 py-3 font-bold text-white disabled:opacity-50">
         {pending ? "Sending..." : <>Withdraw <ArrowUpRight className="h-5 w-5" aria-hidden /></>}
       </button>
-      <p className="text-xs text-slate-400">Sandbox mode: no real funds move. Live conversion uses Roqqu&apos;s rate once connected.</p>
+      <p className="text-xs text-muted">Sandbox mode: no real funds move. Live conversion uses Roqqu&apos;s rate once connected.</p>
     </form>
   );
 }

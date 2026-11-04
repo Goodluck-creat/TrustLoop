@@ -48,25 +48,25 @@ export default function ImagePicker({ kind, current }: { kind: "avatar" | "cover
 
   return (
     <form action={action} className="space-y-3">
-      <div className={`overflow-hidden bg-white/10 ${kind === "avatar" ? "h-24 w-24 rounded-2xl" : "h-28 w-full rounded-2xl sm:h-36"}`}>
+      <div className={`overflow-hidden bg-cream ${kind === "avatar" ? "h-24 w-24 rounded-2xl" : "h-28 w-full rounded-2xl sm:h-36"}`}>
         {shown ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={shown} alt="" className="h-full w-full object-cover" />
         ) : (
-          <div className="flex h-full w-full items-center justify-center text-slate-400"><ImagePlus className="h-7 w-7" aria-hidden /></div>
+          <div className="flex h-full w-full items-center justify-center text-muted"><ImagePlus className="h-7 w-7" aria-hidden /></div>
         )}
       </div>
       <input ref={hidden} type="file" name="file" className="hidden" tabIndex={-1} aria-hidden />
       <div className="flex flex-wrap items-center gap-3">
-        <label className="cursor-pointer rounded-xl border border-white/25 px-4 py-2 text-sm font-semibold hover:bg-white/10 focus-within:ring-2 focus-within:ring-violet-400">
+        <label className="cursor-pointer rounded-xl border border-ink/20 px-4 py-2 text-sm font-semibold hover:bg-cream focus-within:ring-2 focus-within:ring-forest">
           Choose image
           <input type="file" accept="image/*" onChange={onPick} className="sr-only" />
         </label>
-        <button disabled={pending || !preview} className="rounded-xl bg-white px-5 py-2 text-sm font-bold text-indigo-900 disabled:opacity-50">
+        <button disabled={pending || !preview} className="rounded-xl bg-forest px-5 py-2 text-sm font-bold text-white disabled:opacity-50">
           {pending ? "Saving..." : "Save"}
         </button>
       </div>
-      {(localError || error) && <p role="alert" className="text-sm font-semibold text-rose-300">{localError ?? error}</p>}
+      {(localError || error) && <p role="alert" className="text-sm font-semibold text-rose-700">{localError ?? error}</p>}
     </form>
   );
 }

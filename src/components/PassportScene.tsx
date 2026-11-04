@@ -9,7 +9,7 @@ const hidden = { backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden
 function Person({ id, skin, shirt, hair, title, sub }: { id: string; skin: string; shirt: string; hair: string; title: string; sub: string }) {
   return (
     <div className="flex flex-col items-center gap-2">
-      <svg viewBox="0 0 120 150" className="h-28 w-24 drop-shadow-[0_18px_25px_rgba(124,58,237,0.5)] sm:h-36 sm:w-28" aria-hidden="true">
+      <svg viewBox="0 0 120 150" className="h-28 w-24 drop-shadow-[0_18px_25px_rgba(18,61,50,0.35)] sm:h-36 sm:w-28" aria-hidden="true">
         <defs>
           <radialGradient id={`s-${id}`} cx="35%" cy="25%" r="80%">
             <stop offset="0" stopColor="#fff" stopOpacity="0.45" />
@@ -25,9 +25,9 @@ function Person({ id, skin, shirt, hair, title, sub }: { id: string; skin: strin
         <circle cx="70" cy="52" r="3" fill="#2b1810" />
         <path d="M51 62 Q60 69 69 62" stroke="#5b2a1a" strokeWidth="3" fill="none" strokeLinecap="round" />
       </svg>
-      <div className="rounded-2xl border border-white/20 bg-white/10 px-3 py-2 text-center backdrop-blur-md">
-        <p className="text-sm font-bold text-white">{title}</p>
-        <p className="text-xs text-slate-300">{sub}</p>
+      <div className="rounded-2xl border border-ink/10 bg-white px-3 py-2 text-center shadow-md shadow-ink/10">
+        <p className="text-sm font-bold text-ink">{title}</p>
+        <p className="text-xs text-muted">{sub}</p>
       </div>
     </div>
   );
@@ -82,7 +82,7 @@ export default function PassportScene() {
       style={{ touchAction: "pan-y" }}
       className="relative mx-auto flex h-[480px] w-full max-w-[540px] cursor-grab select-none items-center justify-center active:cursor-grabbing"
     >
-      <div className="pointer-events-none absolute inset-x-8 top-1/2 h-40 -translate-y-1/2 rounded-full bg-violet-500/30 blur-3xl" />
+      <div className="pointer-events-none absolute inset-x-8 top-1/2 h-40 -translate-y-1/2 rounded-full bg-sage/50 blur-3xl" />
 
       <div className="pointer-events-none absolute bottom-2 left-0 z-10 tl-float"><Person id="hirer" skin="#f1c7a0" shirt="#6366f1" hair="#2b1810" title="Hirer" sub="Posts a funded task" /></div>
       <div className="pointer-events-none absolute right-0 top-2 z-10 tl-float-b"><Person id="free" skin="#8d5a3b" shirt="#ec4899" hair="#120a06" title="Freelancer" sub="Gets paid + credential" /></div>
@@ -94,7 +94,7 @@ export default function PassportScene() {
           style={{ transformStyle: "preserve-3d", transform: `rotateX(${rot.x}deg) rotateY(${rot.y}deg)` }}
         >
           {/* FRONT */}
-          <div style={hidden} className="absolute inset-0 rounded-3xl bg-gradient-to-br from-indigo-600 via-violet-600 to-fuchsia-600 p-5 text-white shadow-2xl ring-1 ring-white/30">
+          <div style={hidden} className="absolute inset-0 rounded-3xl bg-gradient-to-br from-[#123D32] via-[#1b5a49] to-[#2c6b57] p-5 text-white shadow-2xl ring-1 ring-white/30">
             <div className="flex items-center justify-between">
               <span className="text-[10px] font-bold tracking-[0.2em] text-indigo-100">TRUST PASSPORT</span>
               <span className="rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-bold text-white">Sample</span>
@@ -131,7 +131,7 @@ export default function PassportScene() {
           </div>
 
           {/* BACK */}
-          <div style={{ ...hidden, transform: "rotateY(180deg)" }} className="absolute inset-0 rounded-3xl bg-gradient-to-br from-slate-900 via-indigo-900 to-violet-900 p-5 text-white shadow-2xl ring-1 ring-white/20">
+          <div style={{ ...hidden, transform: "rotateY(180deg)" }} className="absolute inset-0 rounded-3xl bg-gradient-to-br from-[#17221F] via-[#123D32] to-[#1b5a49] p-5 text-white shadow-2xl ring-1 ring-white/20">
             <p className="text-[10px] font-bold tracking-[0.2em] text-indigo-200">SCAN TO VERIFY</p>
             <div className="mx-auto mt-4 grid w-40 grid-cols-9 gap-[3px] rounded-2xl bg-white p-3">
               {qr.map((on, i) => (<span key={i} className={`aspect-square rounded-[2px] ${on ? "bg-indigo-900" : "bg-indigo-100"}`} />))}
@@ -143,10 +143,10 @@ export default function PassportScene() {
         </div>
       </div>
 
-      <div className="pointer-events-none absolute right-4 bottom-8 z-10 tl-float-b flex items-center gap-2 rounded-2xl bg-white/10 px-4 py-3 text-sm font-semibold backdrop-blur-md">
-        <Check className="h-4 w-4 text-emerald-300" aria-hidden /> Payment released
+      <div className="pointer-events-none absolute right-4 bottom-8 z-10 tl-float-b flex items-center gap-2 rounded-2xl bg-white px-4 py-3 text-sm font-semibold text-ink shadow-lg shadow-ink/10">
+        <Check className="h-4 w-4 text-emerald-700" aria-hidden /> Payment released
       </div>
-      <p className="pointer-events-none absolute bottom-0 w-full text-center text-xs text-slate-300">Drag to rotate the Trust Passport</p>
+      <p className="pointer-events-none absolute bottom-0 w-full text-center text-xs text-muted">Drag to rotate the Trust Passport</p>
     </div>
   );
 }

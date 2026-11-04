@@ -1,9 +1,9 @@
 const grads = [
-  "from-violet-500 to-fuchsia-500",
-  "from-cyan-400 to-indigo-500",
-  "from-amber-400 to-pink-500",
-  "from-emerald-400 to-cyan-500",
-  "from-pink-500 to-orange-400",
+  "from-forest to-[#2c6b57]",
+  "from-bronze to-[#8a6638]",
+  "from-[#6f8a73] to-[#3f6652]",
+  "from-[#2c6b57] to-forest",
+  "from-[#8a6638] to-bronze",
 ];
 
 export default function Avatar({

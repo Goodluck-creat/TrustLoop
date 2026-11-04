@@ -46,3 +46,17 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .tl-float, .tl-float-b, .tl-aurora, .tl-coin { animation: none; }
 }
+/* trustloop-theme */
+@theme inline {
+  --color-forest: #123D32;
+  --color-ink: #17221F;
+  --color-paper: #F7F6F1;
+  --color-cream: #EEECE4;
+  --color-sage: #A7B7A6;
+  --color-sand: #D8C7A8;
+  --color-bronze: #B58B55;
+  --color-muted: #66716B;
+  --color-faint: #929B94;
+}
+html { scroll-behavior: smooth; }
+body { background: #F7F6F1; color: #17221F; }

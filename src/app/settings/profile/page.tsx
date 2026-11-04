@@ -21,12 +21,12 @@ export default async function ProfileSettings({ searchParams }: { searchParams: 
   return (
     <Shell>
       <div className="mx-auto max-w-2xl space-y-5">
-        <Link href={`/p/${user.id}`} className="inline-flex items-center gap-2 text-sm font-semibold text-slate-300 hover:text-white">
+        <Link href={`/p/${user.id}`} className="inline-flex items-center gap-2 text-sm font-semibold text-muted hover:text-ink">
           <ArrowLeft className="h-4 w-4" aria-hidden /> Back to my passport
         </Link>
         <h1 className="text-2xl font-extrabold">Edit profile pictures</h1>
         {saved && (
-          <p role="status" className="flex items-center gap-2 rounded-2xl bg-emerald-400/15 px-4 py-3 text-sm font-semibold text-emerald-200">
+          <p role="status" className="flex items-center gap-2 rounded-2xl bg-emerald-100 px-4 py-3 text-sm font-semibold text-emerald-800">
             <CheckCircle2 className="h-5 w-5" aria-hidden /> Saved.
           </p>
         )}
@@ -36,7 +36,7 @@ export default async function ProfileSettings({ searchParams }: { searchParams: 
           <ImagePicker kind="avatar" current={avatarSrc(user)} />
           {user.avatarAt && (
             <form action={removeImage.bind(null, "avatar")}>
-              <button className="text-sm font-semibold text-slate-300 underline">Remove picture</button>
+              <button className="text-sm font-semibold text-muted underline">Remove picture</button>
             </form>
           )}
         </section>
@@ -46,7 +46,7 @@ export default async function ProfileSettings({ searchParams }: { searchParams: 
           <ImagePicker kind="cover" current={coverSrc(user)} />
           {user.coverAt && (
             <form action={removeImage.bind(null, "cover")}>
-              <button className="text-sm font-semibold text-slate-300 underline">Remove cover</button>
+              <button className="text-sm font-semibold text-muted underline">Remove cover</button>
             </form>
           )}
         </section>
