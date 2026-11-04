@@ -1,7 +1,36 @@
 import { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 import { issueCredential } from "@/lib/credentials";
+import { notify } from "@/lib/notify";
 
+// A wallet top-up was paid (simulator or Roqqu webhook). Credits the wallet once.
+export async function handleDepositConfirmed(input: { eventId: string; reference: string }) {
+  try {
+    await db.$transaction(async (tx) => {
+      await tx.webhookEvent.create({ data: { eventId: input.eventId, type: "deposit_confirmed" } });
+      const dep = await tx.deposit.findUnique({ where: { reference: input.reference } });
+      if (!dep) throw new Error("UNKNOWN_REFERENCE");
+      if (dep.status === "CONFIRMED") return;
+      await tx.deposit.update({ where: { id: dep.id }, data: { status: "CONFIRMED" } });
+      await tx.ledgerEntry.create({
+        data: {
+          userId: dep.userId,
+          type: "DEPOSIT",
+          amountNgn: dep.amountNgn,
+          reference: `DEP_${dep.reference}`,
+          note: "Wallet top-up",
+        },
+      });
+      await notify(tx, dep.userId, "Money added", `₦${dep.amountNgn.toLocaleString("en-NG")} was added to your wallet.`, "/wallet");
+    });
+    return "ok" as const;
+  } catch (e) {
+    if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002") return "duplicate" as const;
+    throw e;
+  }
+}
+
+// Legacy: confirms a per-task funding payment. Kept so older code still compiles.
 export async function handleFundingConfirmed(input: { eventId: string; reference: string }) {
   try {
     await db.$transaction(async (tx) => {

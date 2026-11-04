@@ -1,15 +1,19 @@
 import type { Prisma } from "@prisma/client";
 
+// A wallet balance is the sum of its ledger rows. Credits are positive, debits negative.
 export async function getBalance(client: Prisma.TransactionClient, userId: string) {
-  const earned = await client.task.aggregate({
-    where: { contributorId: userId, status: "PAID" },
-    _sum: { rewardNgn: true },
-  });
-  const withdrawn = await client.withdrawal.aggregate({
-    where: { userId, status: { not: "FAILED" } },
+  const rows = await client.ledgerEntry.groupBy({
+    by: ["type"],
+    where: { userId },
     _sum: { amountNgn: true },
   });
-  const e = earned._sum.rewardNgn ?? 0;
-  const w = withdrawn._sum.amountNgn ?? 0;
-  return { earned: e, withdrawn: w, balance: e - w };
+  const sum = (t: string) => rows.find((r) => r.type === t)?._sum.amountNgn ?? 0;
+  const balance = rows.reduce((a, r) => a + (r._sum.amountNgn ?? 0), 0);
+  return {
+    deposited: sum("DEPOSIT"),
+    earned: sum("TASK_PAYOUT"),
+    funded: 0 - sum("TASK_FUND"),
+    withdrawn: 0 - (sum("WITHDRAWAL") + sum("REFUND")),
+    balance,
+  };
 }

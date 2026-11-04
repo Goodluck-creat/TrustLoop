@@ -30,6 +30,9 @@ export async function requestWithdrawal(_prev: string | null, formData: FormData
         const { balance } = await getBalance(tx, userId);
         if (amountNgn > balance) throw new Error("INSUFFICIENT");
         await tx.withdrawal.create({ data: { userId, amountNgn, asset, network, address, reference } });
+        await tx.ledgerEntry.create({
+          data: { userId, type: "WITHDRAWAL", amountNgn: -amountNgn, reference, note: `${asset} on ${network}` },
+        });
       },
       { isolationLevel: "Serializable" },
     );
@@ -39,13 +42,19 @@ export async function requestWithdrawal(_prev: string | null, formData: FormData
   }
 
   try {
-    const res = await payments.sendPayout({ reference, amountNgn });
+    const res = await payments.sendPayout({ reference, amountNgn, toAddress: address, network: network.toLowerCase() });
     if (res.txHash) {
       await db.withdrawal.update({ where: { reference }, data: { status: "COMPLETED", txHash: res.txHash } });
       await notify(db, userId, "Withdrawal sent", `₦${amountNgn.toLocaleString("en-NG")} was sent as ${asset} on ${network}.`, "/dashboard");
     }
   } catch {
-    await db.withdrawal.update({ where: { reference }, data: { status: "FAILED" } });
+    // The transfer failed, so put the money back in the wallet.
+    await db.$transaction([
+      db.withdrawal.update({ where: { reference }, data: { status: "FAILED" } }),
+      db.ledgerEntry.create({
+        data: { userId, type: "REFUND", amountNgn, reference: `${reference}_rev`, note: "Withdrawal reversed" },
+      }),
+    ]);
     return "The transfer failed and your balance was not charged. Please try again.";
   }
   redirect("/dashboard?w=ok");

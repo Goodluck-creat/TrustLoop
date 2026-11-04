@@ -53,7 +53,7 @@ export async function submitWork(taskId: string, formData: FormData) {
   redirect(`/tasks/${taskId}`);
 }
 
-// Approval releases the reward to the contributor's balance and issues the credential, in one step.
+// Approval moves the locked reward into the contributor's wallet and issues the credential, in one step.
 export async function approveTask(taskId: string) {
   const user = await me();
   await db.$transaction(async (tx) => {
@@ -68,8 +68,18 @@ export async function approveTask(taskId: string) {
     await tx.payment.create({
       data: { taskId, type: "PAYOUT", status: "CONFIRMED", reference, asset: "NGN", amount: String(task.rewardNgn) },
     });
+    await tx.ledgerEntry.create({
+      data: {
+        userId: task.contributorId,
+        type: "TASK_PAYOUT",
+        amountNgn: task.rewardNgn,
+        reference: `PO_${taskId}`,
+        taskId,
+        note: task.title,
+      },
+    });
     await issueCredential(tx, taskId, reference, null);
-    await notify(tx, task.contributorId, "Work approved, payment released", `"${task.title}" was approved. Your balance has been credited.`, `/tasks/${taskId}`);
+    await notify(tx, task.contributorId, "Work approved, payment released", `"${task.title}" was approved. Your wallet has been credited.`, `/tasks/${taskId}`);
   });
   redirect(`/tasks/${taskId}`);
 }

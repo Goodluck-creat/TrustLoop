@@ -52,6 +52,11 @@ model User {
   avatarAt      DateTime?
   coverAt       DateTime?
   images        UserImage[]
+  depositAddress String?
+  depositNetwork String?
+  depositSandbox Boolean @default(false)
+  ledger         LedgerEntry[]
+  deposits       Deposit[]
 }
 
 model Task {
@@ -167,4 +172,44 @@ model UserImage {
   user      User     @relation(fields: [userId], references: [id])
 
   @@id([userId, kind])
+}
+
+enum LedgerType {
+  DEPOSIT
+  TASK_FUND
+  TASK_PAYOUT
+  WITHDRAWAL
+  REFUND
+}
+
+enum DepositStatus {
+  PENDING
+  CONFIRMED
+  FAILED
+}
+
+model LedgerEntry {
+  id        String     @id @default(cuid())
+  user      User       @relation(fields: [userId], references: [id])
+  userId    String
+  type      LedgerType
+  amountNgn Int
+  reference String     @unique
+  taskId    String?
+  note      String?
+  createdAt DateTime   @default(now())
+
+  @@index([userId, createdAt])
+}
+
+model Deposit {
+  id        String        @id @default(cuid())
+  user      User          @relation(fields: [userId], references: [id])
+  userId    String
+  amountNgn Int
+  status    DepositStatus @default(PENDING)
+  reference String        @unique
+  createdAt DateTime      @default(now())
+
+  @@index([userId])
 }

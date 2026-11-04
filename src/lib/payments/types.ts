@@ -1,5 +1,6 @@
 export type FundingLink = { url: string; reference: string; expiresAt: Date };
 export type PayoutResult = { reference: string; txHash: string | null };
+export type WalletAddress = { address: string; network: string; sandbox: boolean };
 
 export interface PaymentProvider {
   createFundingLink(input: {
@@ -17,4 +18,10 @@ export interface PaymentProvider {
     toAddress?: string;
     network?: string; // trc20 (default), bep20, ...
   }): Promise<PayoutResult>;
+  createWallet(input: {
+    email: string;
+    firstName: string;
+    lastName: string;
+    network?: string;
+  }): Promise<WalletAddress>;
 }

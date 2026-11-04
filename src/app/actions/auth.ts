@@ -1,9 +1,11 @@
 "use server";
 
 import bcrypt from "bcryptjs";
+import { after } from "next/server";
 import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { createSession, destroySession } from "@/lib/session";
+import { ensureDepositAddress } from "@/lib/wallet";
 
 export async function signup(_prev: string | null, formData: FormData) {
   const name = String(formData.get("name") ?? "").trim();
@@ -21,6 +23,8 @@ export async function signup(_prev: string | null, formData: FormData) {
     data: { name, email, role, passwordHash: await bcrypt.hash(password, 10) },
   });
   await createSession(user.id);
+  // Create the wallet address after the response, so sign-up stays fast.
+  after(() => ensureDepositAddress(user.id).catch(() => undefined));
   redirect("/dashboard");
 }
 

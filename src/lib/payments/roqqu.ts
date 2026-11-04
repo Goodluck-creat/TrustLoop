@@ -1,4 +1,4 @@
-import type { FundingLink, PaymentProvider, PayoutResult } from "./types";
+import type { FundingLink, PaymentProvider, PayoutResult, WalletAddress } from "./types";
 import { mockProvider } from "./mock";
 
 const BASE = process.env.ROQQU_BASE_URL ?? "https://service.roqqu.com/v1";
@@ -11,17 +11,18 @@ function authHeaders(): Record<string, string> {
   const name = process.env.ROQQU_ENV === "live" ? "x-api-key" : "x-staging-api-key";
   return {
     [name]: key,
-    "Content-Type": "application/x-www-form-urlencoded",
     Accept: "application/json",
     "User-Agent": "TrustLoop/1.0",
   };
 }
 
-async function call(path: string, body: Record<string, string>) {
+async function call(path: string, body: Record<string, string>, format: "form" | "json" = "form") {
+  const headers = authHeaders();
+  headers["Content-Type"] = format === "json" ? "application/json" : "application/x-www-form-urlencoded";
   const res = await fetch(`${BASE}${path}`, {
     method: "POST",
-    headers: authHeaders(),
-    body: new URLSearchParams(body),
+    headers,
+    body: format === "json" ? JSON.stringify(body) : new URLSearchParams(body),
     signal: AbortSignal.timeout(15000),
     cache: "no-store",
   });
@@ -72,8 +73,8 @@ export const roqquProvider: PaymentProvider = {
             last_name: rest.join(" ") || "Hirer",
           }),
           payment_reference: shortRef(reference),
-          success_url: `${APP_URL}/dashboard`,
-          cancel_url: `${APP_URL}/dashboard`,
+          success_url: `${APP_URL}/wallet?added=1`,
+          cancel_url: `${APP_URL}/wallet`,
           metadata: JSON.stringify({ reference, task: taskTitle.slice(0, 60) }),
         });
         const url = String(data.payment_link ?? "");
@@ -102,6 +103,30 @@ export const roqquProvider: PaymentProvider = {
         return { reference, txHash: null };
       },
       () => mockProvider.sendPayout(input),
+    );
+  },
+
+  createWallet(input) {
+    return withFallback<WalletAddress>(
+      async () => {
+        const network = input.network ?? "trc20";
+        const data = await call(
+          "/wallets/generate-wallet",
+          {
+            network,
+            customer: JSON.stringify({
+              email: input.email,
+              first_name: input.firstName,
+              last_name: input.lastName,
+            }),
+          },
+          "json",
+        );
+        const address = String(data.address ?? "");
+        if (!address) throw new Error("Roqqu did not return an address");
+        return { address, network, sandbox: false };
+      },
+      () => mockProvider.createWallet(input),
     );
   },
 };
