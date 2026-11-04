@@ -96,7 +96,7 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
 
   return (
     <Shell>
-      <div className="grid gap-6 lg:grid-cols-[260px_minmax(0,1fr)_280px]">
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[260px_minmax(0,1fr)_280px]">
         <aside className="space-y-4">
           <div className={`${card} overflow-hidden`}>
             <Cover seed={user.name} src={coverSrc(user)} className="h-24" />
