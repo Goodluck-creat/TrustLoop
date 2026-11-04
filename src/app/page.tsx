@@ -4,15 +4,15 @@ import PassportScene from "@/components/PassportScene";
 import { HeaderAuth, HeroAuth } from "@/components/AuthButtons";
 
 const steps = [
-  { n: "1", t: "Fund", d: "A hirer posts a task and funds the reward." },
-  { n: "2", t: "Deliver", d: "A freelancer submits their finished work." },
-  { n: "3", t: "Get paid", d: "Approval triggers the payout." },
-  { n: "4", t: "Prove it", d: "A verifiable credential joins their Trust Passport." },
+  { n: "1", t: "Post a job", d: "Describe the work and put the payment in. The money is held until the job is done." },
+  { n: "2", t: "Pick someone", d: "Freelancers apply. You see their past work and choose the right person." },
+  { n: "3", t: "Approve and pay", d: "Happy with the result? Approve it and they are paid at once." },
+  { n: "4", t: "Keep the proof", d: "The freelancer gets a signed record of the job that anyone can check." },
 ];
 
 const groups = [
-  { t: "For hirers", l: ["Post a task and fund it in minutes", "Review work with an AI checklist", "Pay only for approved work", "Keep a record of who you have worked with"] },
-  { t: "For freelancers", l: ["Find paid tasks that match your skills", "Know the reward is funded before you start", "Get paid on approval", "Own a Trust Passport anyone can verify"] },
+  { t: "For hirers", l: ["Post a job and pay safely from your wallet", "See each applicant's past work before you choose", "Pay only for work you approve", "Keep a record of who you have worked with"] },
+  { t: "For freelancers", l: ["Find paid jobs that match your skills", "Know the money is in before you start", "Get paid the moment your work is approved", "Build a profile of proven work anyone can verify"] },
 ];
 
 // Put a photo at public/hero.jpg. Until then the forest gradient shows.
@@ -26,27 +26,29 @@ export default function Home() {
         className="relative flex min-h-[100svh] flex-col overflow-hidden bg-cover bg-center text-white"
         style={{ backgroundImage: heroBg }}
       >
-        <header className="mx-auto flex w-full max-w-6xl items-center justify-between px-5 py-4">
-          <span className="text-lg font-extrabold tracking-tight">Trust<span className="text-bronze">Loop</span></span>
-          <nav className="hidden gap-6 text-sm font-semibold text-white/80 md:flex">
-            <a href="#how" className="hover:text-white">How it works</a>
-            <a href="#who" className="hover:text-white">For hirers and freelancers</a>
-          </nav>
-          <Suspense fallback={<div className="h-9 w-36" />}>
-            <HeaderAuth onDark />
-          </Suspense>
-        </header>
+        <div className="mx-auto w-full max-w-6xl px-4 pt-3 sm:pt-4">
+          <header className="flex items-center justify-between rounded-full border border-white/20 bg-white/10 px-4 py-2 backdrop-blur-md sm:px-6">
+            <span className="text-lg font-extrabold tracking-tight">Trust<span className="text-bronze">Loop</span></span>
+            <nav className="hidden gap-6 text-sm font-semibold text-white/80 md:flex">
+              <a href="#how" className="hover:text-white">How it works</a>
+              <a href="#who" className="hover:text-white">For hirers and freelancers</a>
+            </nav>
+            <Suspense fallback={<div className="h-9 w-36" />}>
+              <HeaderAuth onDark />
+            </Suspense>
+          </header>
+        </div>
 
         <div className="mx-auto grid w-full max-w-6xl flex-1 items-center gap-6 px-5 pb-8 lg:grid-cols-2">
           <div>
             <p className="inline-block rounded-full border border-white/25 px-3 py-1 text-xs font-semibold text-sand">
-              Built for the Anambra Web3 Hackathon
+              Powered by Roqqu
             </p>
             <h1 className="mt-4 text-4xl font-extrabold leading-[1.08] sm:text-5xl lg:text-6xl">
               Good Work Deserves to Be <span className="text-sand">Trusted.</span>
             </h1>
             <p className="mt-4 max-w-md text-base text-white/80 sm:text-lg">
-              Communities fund tasks. Freelancers deliver. Every approved task becomes a credential anyone can verify.
+              Hire someone for a job and pay only when it is done. Freelancers get paid instantly and build a profile of proven work that anyone can check.
             </p>
             <Suspense fallback={<div className="mt-6 h-12" />}>
               <HeroAuth onDark />
@@ -86,10 +88,6 @@ export default function Home() {
           ))}
         </div>
       </div>
-
-      <footer className="border-t border-ink/10 px-5 py-5 text-center text-xs text-muted">
-        TrustLoop is a hackathon project built on the Roqqu API. Contact: [your email here]
-      </footer>
     </div>
   );
 }
