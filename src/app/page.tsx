@@ -1,7 +1,9 @@
 import { Suspense } from "react";
+import Link from "next/link";
 import { Check } from "lucide-react";
 import PassportScene from "@/components/PassportScene";
-import { HeaderAuth, HeroAuth } from "@/components/AuthButtons";
+import LandingNav from "@/components/LandingNav";
+import { HeaderAuth, HeroAuth, MenuAuth } from "@/components/AuthButtons";
 
 const steps = [
   { n: "1", t: "Post a job", d: "Describe the work and put the payment in. The money is held until the job is done." },
@@ -27,19 +29,21 @@ export default function Home() {
         style={{ backgroundImage: heroBg }}
       >
         <div className="mx-auto w-full max-w-6xl px-4 pt-3 sm:pt-4">
-          <header className="flex items-center justify-between rounded-full border border-white/20 bg-white/10 px-4 py-2 backdrop-blur-md sm:px-6">
-            <span className="text-lg font-extrabold tracking-tight">Trust<span className="text-bronze">Loop</span></span>
-            <nav className="hidden gap-6 text-sm font-semibold text-white/80 md:flex">
-              <a href="#how" className="hover:text-white">How it works</a>
-              <a href="#who" className="hover:text-white">For hirers and freelancers</a>
-            </nav>
-            <Suspense fallback={<div className="h-9 w-36" />}>
-              <HeaderAuth onDark />
-            </Suspense>
-          </header>
+          <LandingNav
+            desktopAuth={
+              <Suspense fallback={<div className="h-9 w-36" />}>
+                <HeaderAuth onDark />
+              </Suspense>
+            }
+            menuAuth={
+              <Suspense fallback={<div className="h-24" />}>
+                <MenuAuth />
+              </Suspense>
+            }
+          />
         </div>
 
-        <div className="mx-auto grid w-full max-w-6xl flex-1 items-center gap-6 px-5 pb-8 lg:grid-cols-2">
+        <div className="mx-auto grid w-full max-w-6xl flex-1 items-center gap-6 px-5 pb-8 pt-8 sm:pt-10 lg:grid-cols-2">
           <div>
             <p className="inline-block rounded-full border border-white/25 px-3 py-1 text-xs font-semibold text-sand">
               Powered by Roqqu
@@ -88,6 +92,34 @@ export default function Home() {
           ))}
         </div>
       </div>
+
+      <footer className="bg-forest text-white">
+        <div className="mx-auto grid max-w-6xl grid-cols-2 gap-x-5 gap-y-6 px-5 py-8 md:grid-cols-[1.6fr_1fr_1fr]">
+          <div className="col-span-2 md:col-span-1">
+            <span className="text-lg font-extrabold tracking-tight">Trust<span className="text-bronze">Loop</span></span>
+            <p className="mt-2 max-w-xs text-sm text-white/70">
+              Hire with confidence. Get paid instantly. Build a record of work that anyone can verify.
+            </p>
+          </div>
+          <div>
+            <p className="text-xs font-bold uppercase tracking-wide text-white/60">Explore</p>
+            <ul className="mt-2 space-y-1.5 text-sm">
+              <li><a href="#how" className="text-white/90 hover:text-white">How it works</a></li>
+              <li><a href="#who" className="text-white/90 hover:text-white">For hirers and freelancers</a></li>
+            </ul>
+          </div>
+          <div>
+            <p className="text-xs font-bold uppercase tracking-wide text-white/60">Account</p>
+            <ul className="mt-2 space-y-1.5 text-sm">
+              <li><Link href="/login" className="text-white/90 hover:text-white">Log in</Link></li>
+              <li><Link href="/signup" className="text-white/90 hover:text-white">Sign up</Link></li>
+            </ul>
+          </div>
+        </div>
+        <div className="border-t border-white/15 px-5 py-4 text-center text-xs text-white/60">
+          Powered by Roqqu · © 2026 TrustLoop
+        </div>
+      </footer>
     </div>
   );
 }

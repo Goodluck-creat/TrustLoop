@@ -17,6 +17,21 @@ export async function HeaderAuth({ onDark = false }: { onDark?: boolean }) {
   );
 }
 
+// Stacked buttons for the phone menu.
+export async function MenuAuth() {
+  const signedIn = Boolean(await getUserId());
+  return signedIn ? (
+    <Link href="/dashboard" className="block rounded-xl bg-white px-5 py-3 text-center text-sm font-bold text-forest hover:bg-sand">
+      Dashboard
+    </Link>
+  ) : (
+    <div className="grid gap-2">
+      <Link href="/signup" className="rounded-xl bg-white px-5 py-3 text-center text-sm font-bold text-forest hover:bg-sand">Sign up</Link>
+      <Link href="/login" className="rounded-xl border border-white/40 px-5 py-3 text-center text-sm font-semibold text-white hover:bg-white/10">Log in</Link>
+    </div>
+  );
+}
+
 export async function HeroAuth({ onDark = false }: { onDark?: boolean }) {
   const signedIn = Boolean(await getUserId());
   const solid = onDark ? "bg-white text-forest hover:bg-sand" : "bg-forest text-white hover:bg-[#0d2d25]";
