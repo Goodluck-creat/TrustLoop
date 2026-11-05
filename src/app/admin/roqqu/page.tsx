@@ -105,7 +105,7 @@ async function Inner() {
             ["Revenue earned", naira(feesReal), feesDemo ? `plus ${naira(feesDemo)} from sandbox transfers` : "settled through Roqqu", Landmark],
             ["Pending fees", naira(feesPending), "transfers still in progress", Radio],
             ["Average fee", sent.length ? naira(Math.round(feesAll / sent.length)) : "-", `per withdrawal, ${sent.length} sent`, Percent],
-            ["Share of earnings", pct(feesAll, payouts), "fees as part of what freelancers earned", Users],
+            ["Earnings withdrawn", pct(grossSent, payouts), "of what freelancers have earned so far", Users],
           ] as [string, string, string, typeof Wallet][]).map(([label, big, small, Icon]) => (
             <div key={label} className="rounded-xl bg-cream/60 p-4">
               <Icon className="h-4 w-4 text-forest" aria-hidden />

@@ -4,6 +4,7 @@ import { ShieldCheck, BadgeCheck, UserPlus, ArrowUpRight, Pencil, ExternalLink, 
 import Shell from "@/components/Shell";
 import Avatar from "@/components/Avatar";
 import Cover from "@/components/Cover";
+import BioSection from "@/components/BioSection";
 import { LevelPill } from "@/components/TrustBadges";
 import { db } from "@/lib/db";
 import { getUserId } from "@/lib/session";
@@ -84,6 +85,7 @@ export default async function PassportPage({ params }: { params: Promise<{ id: s
               <ShieldCheck className="h-4 w-4 text-forest" aria-hidden /> Verified on Roqqu
             </p>
           )}
+          <BioSection bio={person.bio} isSelf={isSelf} isOrg={isOrg} />
           <div className="mt-6 grid grid-cols-3 gap-3 text-center">
             {stats.map(([label, n]) => (
               <div key={label} className="rounded-2xl bg-cream/60 py-4">

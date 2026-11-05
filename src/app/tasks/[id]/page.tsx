@@ -134,6 +134,7 @@ export default async function TaskPage({
                     </div>
                     <Link href={`/p/${a.contributor.id}`} className="text-xs font-semibold text-muted underline hover:text-ink">Full passport</Link>
                   </div>
+                  {a.contributor.bio && <p className="whitespace-pre-line text-sm text-ink/80">{a.contributor.bio}</p>}
                   {a.note && <p className="rounded-2xl bg-cream/60 px-4 py-3 text-sm">{a.note}</p>}
                   <TrustBadges s={summaries[i]} />
                   <div className="grid grid-cols-2 gap-3">
