@@ -4,6 +4,7 @@ import { ArrowLeft, Check, Clock, ExternalLink, BadgeCheck, PencilLine, Wallet, 
 import Shell from "@/components/Shell";
 import Avatar from "@/components/Avatar";
 import TrustBadges from "@/components/TrustBadges";
+import PaymentTrail from "@/components/PaymentTrail";
 import { db } from "@/lib/db";
 import { getUserId } from "@/lib/session";
 import { avatarSrc } from "@/lib/images";
@@ -188,6 +189,8 @@ export default async function TaskPage({
               </form>
             </div>
           )}
+
+          {task.status === "PAID" && (isOwner || isAssigned) && <PaymentTrail taskId={task.id} showAmounts />}
 
           {task.status === "PAID" && (
             <div className="space-y-3 rounded-3xl bg-sage/30 p-6 ring-1 ring-emerald-600/20">

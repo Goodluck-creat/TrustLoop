@@ -7,6 +7,7 @@ import { getUserId } from "@/lib/session";
 import { getBalance } from "@/lib/money";
 import { notify } from "@/lib/notify";
 import { payments } from "@/lib/payments";
+import { lookupCustomer } from "@/lib/payments/customers";
 
 const ASSETS: Record<string, string[]> = { USDC: ["BASE"], USDT: ["TRC20", "BEP20"] };
 
@@ -22,6 +23,13 @@ export async function requestWithdrawal(_prev: string | null, formData: FormData
   if (!ASSETS[asset]?.includes(network)) return "Choose a supported asset and network.";
   if (!Number.isInteger(amountNgn) || amountNgn < 100) return "Enter a whole amount of at least ₦100.";
   if (!/^[A-Za-z0-9]{26,64}$/.test(address)) return "Enter a valid wallet address.";
+
+  // With live Roqqu, an account Roqqu has blacklisted cannot withdraw.
+  const me = await db.user.findUnique({ where: { id: userId }, select: { email: true } });
+  if (me) {
+    const customer = await lookupCustomer(me.email);
+    if (customer?.blacklisted) return "Withdrawals are paused for your account. Please contact support.";
+  }
 
   const reference = "TL" + randomBytes(7).toString("hex");
   try {
@@ -42,10 +50,20 @@ export async function requestWithdrawal(_prev: string | null, formData: FormData
   }
 
   try {
-    const res = await payments.sendPayout({ reference, amountNgn, toAddress: address, network: network.toLowerCase() });
+    const res = await payments.sendPayout({
+      reference,
+      amountNgn,
+      toAddress: address,
+      network: network.toLowerCase(),
+      token: asset.toLowerCase(),
+    });
     if (res.txHash) {
+      // The simulator finishes at once.
       await db.withdrawal.update({ where: { reference }, data: { status: "COMPLETED", txHash: res.txHash } });
       await notify(db, userId, "Withdrawal sent", `₦${amountNgn.toLocaleString("en-NG")} was sent as ${asset} on ${network}.`, "/dashboard");
+    } else if (res.refid) {
+      // Roqqu queued it. The "token_sent" webhook (or a status check) completes it.
+      await db.withdrawal.update({ where: { reference }, data: { status: "PROCESSING", refid: res.refid } });
     }
   } catch {
     // The transfer failed, so put the money back in the wallet.
@@ -57,5 +75,5 @@ export async function requestWithdrawal(_prev: string | null, formData: FormData
     ]);
     return "The transfer failed and your balance was not charged. Please try again.";
   }
-  redirect("/dashboard?w=ok");
+  redirect("/wallet?m=withdrawn");
 }

@@ -1,47 +1,12 @@
 import type { FundingLink, PaymentProvider, PayoutResult, WalletAddress } from "./types";
 import { mockProvider } from "./mock";
+import { roqquRequest, asRecord } from "./client";
+import { getNgnPerUsdt } from "./rates";
 
-const BASE = process.env.ROQQU_BASE_URL ?? "https://service.roqqu.com/v1";
 const APP_URL = process.env.APP_URL ?? "https://trust-loop-theta.vercel.app";
 
-function authHeaders(): Record<string, string> {
-  const key = process.env.ROQQU_SECRET_KEY?.trim();
-  if (!key) throw new Error("ROQQU_SECRET_KEY is not set");
-  // Test keys use x-staging-api-key. Set ROQQU_ENV=live only with a live key.
-  const name = process.env.ROQQU_ENV === "live" ? "x-api-key" : "x-staging-api-key";
-  return {
-    [name]: key,
-    Accept: "application/json",
-    "User-Agent": "TrustLoop/1.0",
-  };
-}
-
-async function call(path: string, body: Record<string, string>, format: "form" | "json" = "form") {
-  const headers = authHeaders();
-  headers["Content-Type"] = format === "json" ? "application/json" : "application/x-www-form-urlencoded";
-  const res = await fetch(`${BASE}${path}`, {
-    method: "POST",
-    headers,
-    body: format === "json" ? JSON.stringify(body) : new URLSearchParams(body),
-    signal: AbortSignal.timeout(15000),
-    cache: "no-store",
-  });
-  const text = await res.text();
-  let json: { status?: string; message?: string; data?: Record<string, unknown> };
-  try {
-    json = JSON.parse(text);
-  } catch {
-    // For example the Cloudflare "Just a moment" page.
-    throw new Error(`Roqqu returned a non-JSON reply (HTTP ${res.status})`);
-  }
-  if (!res.ok || json.status !== "success") {
-    throw new Error(`Roqqu error (HTTP ${res.status}): ${json.message ?? "unknown"}`);
-  }
-  return json.data ?? {};
-}
-
 // Roqqu wants 1 to 20 letters and numbers. Our full reference travels in metadata.
-function shortRef(reference: string) {
+export function shortRef(reference: string) {
   const clean = reference.replace(/[^a-zA-Z0-9]/g, "");
   return clean.slice(-20) || "TL" + Date.now().toString(36);
 }
@@ -64,19 +29,23 @@ export const roqquProvider: PaymentProvider = {
     return withFallback<FundingLink>(
       async () => {
         const [first, ...rest] = (input.customerName ?? "TrustLoop Hirer").split(" ");
-        const data = await call("/payment-links", {
-          amount: String(amountNgn),
-          amount_currency: "ngn",
-          customer_details: JSON.stringify({
-            email: input.customerEmail ?? "hirer@trustloop.app",
-            first_name: first || "TrustLoop",
-            last_name: rest.join(" ") || "Hirer",
+        const data = asRecord(
+          await roqquRequest("POST", "/payment-links", {
+            form: {
+              amount: String(amountNgn),
+              amount_currency: "ngn",
+              customer_details: JSON.stringify({
+                email: input.customerEmail ?? "hirer@trustloop.app",
+                first_name: first || "TrustLoop",
+                last_name: rest.join(" ") || "Hirer",
+              }),
+              payment_reference: shortRef(reference),
+              success_url: `${APP_URL}/wallet?added=1`,
+              cancel_url: `${APP_URL}/wallet`,
+              metadata: JSON.stringify({ reference, task: taskTitle.slice(0, 60) }),
+            },
           }),
-          payment_reference: shortRef(reference),
-          success_url: `${APP_URL}/wallet?added=1`,
-          cancel_url: `${APP_URL}/wallet`,
-          metadata: JSON.stringify({ reference, task: taskTitle.slice(0, 60) }),
-        });
+        );
         const url = String(data.payment_link ?? "");
         if (!url) throw new Error("Roqqu did not return a payment link");
         const exp = data.expires_at ? new Date(String(data.expires_at)) : null;
@@ -90,17 +59,22 @@ export const roqquProvider: PaymentProvider = {
     const { reference, amountNgn, toAddress } = input;
     return withFallback<PayoutResult>(
       async () => {
-        if (!toAddress) throw new Error("No destination address for a USDT payout");
-        const rate = Number(process.env.NGN_PER_USDT ?? "1500"); // set a real rate before going live
-        const usdt = (amountNgn / rate).toFixed(2);
-        await call("/wallets/send", {
-          amount: usdt,
-          network: input.network ?? "trc20",
-          to: toAddress,
-          token: "usdt",
-        });
-        // Roqqu confirms on-chain later through a webhook, so no hash yet.
-        return { reference, txHash: null };
+        if (!toAddress) throw new Error("No destination address for a payout");
+        const { rate } = await getNgnPerUsdt();
+        const amount = (amountNgn / rate).toFixed(2);
+        const data = asRecord(
+          await roqquRequest("POST", "/wallets/send", {
+            form: {
+              amount,
+              network: input.network ?? "trc20",
+              to: toAddress,
+              token: (input.token ?? "usdt").toLowerCase(),
+            },
+          }),
+        );
+        // Roqqu queues the send and returns its own id. The on-chain hash comes later by webhook.
+        const refid = data.refid ? String(data.refid) : null;
+        return { reference, txHash: null, refid };
       },
       () => mockProvider.sendPayout(input),
     );
@@ -110,17 +84,13 @@ export const roqquProvider: PaymentProvider = {
     return withFallback<WalletAddress>(
       async () => {
         const network = input.network ?? "trc20";
-        const data = await call(
-          "/wallets/generate-wallet",
-          {
-            network,
-            customer: JSON.stringify({
-              email: input.email,
-              first_name: input.firstName,
-              last_name: input.lastName,
-            }),
-          },
-          "json",
+        const data = asRecord(
+          await roqquRequest("POST", "/wallets/generate-wallet", {
+            json: {
+              network,
+              customer: JSON.stringify({ email: input.email, first_name: input.firstName, last_name: input.lastName }),
+            },
+          }),
         );
         const address = String(data.address ?? "");
         if (!address) throw new Error("Roqqu did not return an address");

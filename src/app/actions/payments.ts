@@ -7,6 +7,7 @@ import { getUserId } from "@/lib/session";
 import { getBalance } from "@/lib/money";
 import { notify } from "@/lib/notify";
 import { payments } from "@/lib/payments";
+import { latestRoqquHash } from "@/lib/proof";
 import { handlePayoutConfirmed } from "@/lib/payments/handlers";
 
 // Funds a task from the hirer's wallet. The reward is locked for the task at once.
@@ -44,7 +45,7 @@ export async function startFunding(taskId: string) {
           },
         });
         await tx.payment.create({
-          data: { taskId: task.id, type: "FUND", status: "CONFIRMED", reference, asset: "NGN", amount: String(task.rewardNgn) },
+          data: { taskId: task.id, type: "FUND", status: "CONFIRMED", reference, asset: "NGN", amount: String(task.rewardNgn), ...(await latestRoqquHash(tx, userId)) },
         });
         await notify(tx, userId, "Task funded", `₦${task.rewardNgn.toLocaleString("en-NG")} was locked for "${task.title}".`, `/tasks/${task.id}`);
       },

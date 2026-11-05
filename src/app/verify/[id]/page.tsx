@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import QRCode from "qrcode";
 import { Check, ShieldCheck, ShieldX, X } from "lucide-react";
 import Shell from "@/components/Shell";
+import PaymentTrail from "@/components/PaymentTrail";
 import { db } from "@/lib/db";
 import { checkCredential, publicKeyHex } from "@/lib/credentials";
 import { card } from "@/lib/ui";
@@ -94,6 +95,7 @@ export default async function VerifyPage({ params }: { params: Promise<{ id: str
           <p className="break-all text-xs text-muted">Issuer public key: {publicKeyHex()}</p>
         </div>
       </div>
+    <div className="mt-6"><PaymentTrail credentialId={id} /></div>
     </Shell>
   );
 }

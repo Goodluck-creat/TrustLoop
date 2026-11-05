@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { BadgeCheck, UserPlus, ArrowUpRight, Pencil, ExternalLink, Plus } from "lucide-react";
+import { ShieldCheck, BadgeCheck, UserPlus, ArrowUpRight, Pencil, ExternalLink, Plus } from "lucide-react";
 import Shell from "@/components/Shell";
 import Avatar from "@/components/Avatar";
 import Cover from "@/components/Cover";
@@ -79,6 +79,11 @@ export default async function PassportPage({ params }: { params: Promise<{ id: s
           <p className="mt-1 flex items-center gap-2 text-sm text-muted">
             <BadgeCheck className="h-4 w-4 text-emerald-700" aria-hidden /> Trust Passport · built from approved, signed work
           </p>
+          {person.roqquStatus === "verified" && (
+            <p className="mt-1 flex items-center gap-2 text-sm text-muted">
+              <ShieldCheck className="h-4 w-4 text-forest" aria-hidden /> Verified on Roqqu
+            </p>
+          )}
           <div className="mt-6 grid grid-cols-3 gap-3 text-center">
             {stats.map(([label, n]) => (
               <div key={label} className="rounded-2xl bg-cream/60 py-4">
