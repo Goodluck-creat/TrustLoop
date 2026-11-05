@@ -13,6 +13,8 @@ import { getNgnPerUsdt } from "@/lib/payments/rates";
 import { getSendFee } from "@/lib/payments/fees";
 import { isLiveMode } from "@/lib/payments/client";
 import { explorerUrl } from "@/lib/proof";
+import WithdrawForm from "@/components/WithdrawForm";
+import { withdrawalFeePercent } from "@/lib/platform-fee";
 
 const naira = (n: number) => "₦" + n.toLocaleString("en-NG");
 const LABEL: Record<string, string> = {
@@ -164,14 +166,19 @@ async function WalletInner({ searchParams }: { searchParams: Search }) {
 
       <section className="rounded-2xl border border-ink/10 bg-white p-5 shadow-sm shadow-ink/5">
         <h2 className="flex items-center gap-2 text-lg font-bold"><Gauge className="h-5 w-5 text-forest" aria-hidden /> Rate, fees and your Roqqu account</h2>
-        <dl className="mt-3 grid gap-3 text-sm sm:grid-cols-3">
+        <dl className="mt-3 grid gap-4 text-sm sm:grid-cols-2">
           <div>
             <dt className="text-muted">Price of 1 USDT</dt>
             <dd className="font-bold">{naira(Math.round(rate.rate))}</dd>
             <dd className="text-xs text-muted">{rate.source === "roqqu" ? "Live rate from Roqqu" : live ? "Roqqu rate unavailable, using the set rate" : "Fixed sandbox rate"}</dd>
           </div>
           <div>
-            <dt className="text-muted">Roqqu withdrawal fee</dt>
+            <dt className="text-muted">TrustLoop withdrawal fee</dt>
+            <dd className="font-bold">{withdrawalFeePercent() > 0 ? `${withdrawalFeePercent()}%` : "None right now"}</dd>
+            <dd className="text-xs text-muted">Shown again before you confirm. Joining and earning are free.</dd>
+          </div>
+          <div>
+            <dt className="text-muted">Roqqu network fee</dt>
             <dd className="font-bold">{fee?.percentage != null ? `${fee.percentage}%` : fee?.fee != null ? `${fee.fee} USDT` : "Shown once live"}</dd>
             <dd className="text-xs text-muted">Charged by Roqqu when the transfer is sent</dd>
           </div>
@@ -185,9 +192,13 @@ async function WalletInner({ searchParams }: { searchParams: Search }) {
             </dd>
           </div>
         </dl>
-        <p className="mt-3 text-sm text-muted">
-          To withdraw to your own wallet, use the withdraw form on your <Link href="/dashboard" className="font-semibold text-forest underline">dashboard</Link>.
-        </p>
+      </section>
+
+      <section className="rounded-2xl border border-ink/10 bg-white p-5 shadow-sm shadow-ink/5">
+        <h2 className="text-lg font-bold">Withdraw to your own wallet</h2>
+        <div className="mt-3">
+          <WithdrawForm balance={bal.balance} />
+        </div>
       </section>
 
       {withdrawals.length > 0 && (
@@ -201,7 +212,7 @@ async function WalletInner({ searchParams }: { searchParams: Search }) {
               return (
                 <li key={w.id} className="space-y-2 py-3 text-sm">
                   <div className="flex items-center justify-between gap-3">
-                    <span className="font-semibold">{naira(w.amountNgn)} · {w.asset} on {w.network}</span>
+                    <span className="font-semibold">{naira(w.amountNgn)} · {w.asset} on {w.network}{w.feeNgn > 0 && <span className="font-normal text-muted"> (fee {naira(w.feeNgn)})</span>}</span>
                     <span className={`rounded-full px-3 py-1 text-xs font-bold ${tone}`}>{label}</span>
                   </div>
                   {w.txHash && (

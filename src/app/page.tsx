@@ -14,7 +14,7 @@ const steps = [
 
 const groups = [
   { t: "For hirers", l: ["Post a job and pay safely from your wallet", "See each applicant's past work before you choose", "Pay only for work you approve", "Keep a record of who you have worked with"] },
-  { t: "For freelancers", l: ["Find paid jobs that match your skills", "Know the money is in before you start", "Get paid the moment your work is approved", "Build a profile of proven work anyone can verify"] },
+  { t: "For freelancers", l: ["Find paid jobs that match your skills", "Know the money is in before you start", "Get paid the moment your work is approved", "Build a profile of proven work anyone can verify", "Free to join. A small fee applies only when you withdraw, and we show it first"] },
 ];
 
 // Put a photo at public/hero.jpg. Until then the forest gradient shows.

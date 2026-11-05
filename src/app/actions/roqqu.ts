@@ -46,7 +46,7 @@ export async function checkWithdrawal(reference: string) {
   if (!hash) return back("pending");
   if (w.status !== "COMPLETED") {
     await db.withdrawal.update({ where: { id: w.id }, data: { status: "COMPLETED", txHash: hash } });
-    await notify(db, userId, "Withdrawal sent", `₦${w.amountNgn.toLocaleString("en-NG")} was sent as ${w.asset} on ${w.network}.`, "/wallet");
+    await notify(db, userId, "Withdrawal sent", `₦${(w.amountNgn - w.feeNgn).toLocaleString("en-NG")} was sent as ${w.asset} on ${w.network}.`, "/wallet");
   }
   return back("confirmed");
 }

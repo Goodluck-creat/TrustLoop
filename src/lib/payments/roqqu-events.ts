@@ -170,7 +170,7 @@ async function tokenSent(tx: Tx, meta: Record<string, unknown>) {
   const hash = str(meta.hash);
   if (w.status !== "COMPLETED") {
     await tx.withdrawal.update({ where: { id: w.id }, data: { status: "COMPLETED", txHash: hash || w.txHash } });
-    await notify(tx, w.userId, "Withdrawal sent", `${naira(w.amountNgn)} was sent as ${w.asset} on ${w.network}.`, "/wallet");
+    await notify(tx, w.userId, "Withdrawal sent", `${naira(w.amountNgn - w.feeNgn)} was sent as ${w.asset} on ${w.network}.`, "/wallet");
   }
   await log(tx, { kind: "SEND", userId: w.userId, reference: w.reference, hash, token: str(meta.token), network: str(meta.network), value: num(meta.value), amountNgn: w.amountNgn, status: "SENT" });
 }

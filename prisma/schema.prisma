@@ -170,6 +170,8 @@ model Withdrawal {
 
   @@index([userId])
   refid String?
+  feeNgn Int @default(0)
+  feePercent Float @default(0)
 }
 model UserImage {
   userId    String
